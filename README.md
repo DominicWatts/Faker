@@ -6,6 +6,14 @@ This extension uses `fzaninotto/faker`
 
 Docs for this package can be found here: https://packagist.org/packages/fzaninotto/faker
 
+# Install instructions #
+
+`composer require dominicwatts/faker`
+
+`php bin/magento setup:upgrade`
+
+# Usage instructions #
+
 Content is generated via the following console commands
 
 ## Generate Customer ##
