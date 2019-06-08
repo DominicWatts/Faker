@@ -1,0 +1,28 @@
+{
+    "name": "DominicWatts/Faker",
+    "description": "",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Dominic Xigen",
+            "email": "dominic@xigen.co.uk"
+        }
+    ],
+    "require": {
+        "fzaninotto/faker": "*"
+    },
+    "require-dev": {
+        "fzaninotto/faker": "*"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Xigen\\Faker\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}
