@@ -1,9 +1,9 @@
 {
-    "name": "DominicWatts/Faker",
+    "name": "dominicwatts/Faker",
     "description": "",
     "type": "magento2-module",
     "license": "proprietary",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "authors": [
         {
             "name": "Dominic Xigen",
