@@ -9,8 +9,6 @@ use Magento\Framework\App\Helper\AbstractHelper;
  */
 class Product extends AbstractHelper
 {
-    const COUNTRY_CODE = 'GB';
-    const LOCALE_CODE = 'en_GB';
     const ATTRIBUTE_SET_ID = 4;
     const PLACEHOLDER_SOURCE = 'http://lorempixel.com/1000/1000';
 
@@ -37,7 +35,8 @@ class Product extends AbstractHelper
         \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagementInterface,
         \Xigen\Faker\Helper\Category $categoryHelper
     ) {
-        $this->faker = \Faker\Factory::create(self::LOCALE_CODE);
+        // https://packagist.org/packages/fzaninotto/faker
+        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->productInterfaceFactory = $productInterfaceFactory;
         $this->productRepositoryInterface = $productRepositoryInterface;

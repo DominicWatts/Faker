@@ -11,8 +11,6 @@ use Magento\Sales\Model\Service\InvoiceService;
  */
 class Order extends AbstractHelper
 {
-    const LOCALE_CODE = 'en_GB';
-
     private $faker;
     private $logger;
     private $customerHelper;
@@ -36,7 +34,8 @@ class Order extends AbstractHelper
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
         \Magento\Sales\Model\Convert\Order $convertOrder
     ) {
-        $this->faker = \Faker\Factory::create(self::LOCALE_CODE);
+        // https://packagist.org/packages/fzaninotto/faker
+        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->customerHelper = $customerHelper;
         $this->productHelper = $productHelper;
