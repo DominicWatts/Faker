@@ -9,9 +9,6 @@ use Magento\Framework\App\Helper\AbstractHelper;
  */
 class Category extends AbstractHelper
 {
-    const COUNTRY_CODE = 'GB';
-    const LOCALE_CODE = 'en_GB';
-
     private $faker;
     private $logger;
 
@@ -27,7 +24,7 @@ class Category extends AbstractHelper
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
     ) {
         // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(self::LOCALE_CODE);
+        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->categoryInterfaceFactory = $categoryInterfaceFactory;
         $this->categoryRepositoryInterface = $categoryRepositoryInterface;

@@ -9,9 +9,6 @@ use Magento\Framework\App\Helper\AbstractHelper;
  */
 class Customer extends AbstractHelper
 {
-    const COUNTRY_CODE = 'GB';
-    const LOCALE_CODE = 'en_GB';
-
     private $customerInterfaceFactory;
     private $customerRepositoryInterface;
     private $addressInterfaceFactory;
@@ -42,7 +39,7 @@ class Customer extends AbstractHelper
         $this->regionInterface = $regionInterface;
         $this->encryptorInterface = $encryptorInterface;
         // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(self::LOCALE_CODE);
+        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->customerCollectionFactory = $customerCollectionFactory;
         parent::__construct($context);
@@ -94,7 +91,7 @@ class Customer extends AbstractHelper
                 ->setCity($this->faker->city)
                 ->setRegion($this->regionInterface->setRegion($this->faker->county))
                 ->setPostcode($this->faker->postcode)
-                ->setCountryId(self::COUNTRY_CODE)
+                ->setCountryId(\Xigen\Faker\Helper\Data::COUNTRY_CODE)
                 ->setCustomerId($customer->getId())
                 ->setTelephone($this->faker->phoneNumber)
                 ->setIsDefaultBilling(true)
