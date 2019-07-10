@@ -18,10 +18,25 @@ class Category extends Command
     const STORE_OPTION = 'store';
     const LIMIT_OPTION = 'limit';
 
-    private $logger;
-    private $state;
-    private $dateTime;
-    private $customerHelper;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var \Magento\Framework\App\State
+     */
+    protected $state;
+
+    /**
+     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     */
+    protected $dateTime;
+
+    /**
+     * @var \Xigen\Faker\Helper\Category
+     */
+    protected $categoryHelper;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,

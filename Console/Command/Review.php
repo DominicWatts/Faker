@@ -10,13 +10,12 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Product Console
+ * Review console
  */
-class Product extends Command
+class Review extends Command
 {
     const GENERATE_ARGUMENT = 'generate';
-    const WEBSITE_OPTION = 'website';
-    const TYPE_OPTION = 'type';
+    const STORE_OPTION = 'store';
     const LIMIT_OPTION = 'limit';
 
     /**
@@ -35,20 +34,20 @@ class Product extends Command
     protected $dateTime;
 
     /**
-     * @var \Xigen\Faker\Helper\Product
+     * @var \Xigen\Faker\Helper\Review
      */
-    protected $productHelper;
+    protected $reviewHelper;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\App\State $state,
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Xigen\Faker\Helper\Product $productHelper
+        \Xigen\Faker\Helper\Review $reviewHelper
     ) {
         $this->logger = $logger;
         $this->state = $state;
         $this->dateTime = $dateTime;
-        $this->productHelper = $productHelper;
+        $this->reviewHelper = $reviewHelper;
         parent::__construct();
     }
 
@@ -64,7 +63,7 @@ class Product extends Command
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
 
         $generate = $input->getArgument(self::GENERATE_ARGUMENT) ?: false;
-        $websiteId = $this->input->getOption(self::WEBSITE_OPTION) ?: 1;
+        $storeId = $this->input->getOption(self::STORE_OPTION) ?: 1;
         $limit = $this->input->getOption(self::LIMIT_OPTION) ?: 5;
 
         if ($generate) {
@@ -74,7 +73,7 @@ class Product extends Command
             $progress->start();
 
             for ($generate = 1; $generate <= $limit; $generate++) {
-                $product = $this->productHelper->createProduct($websiteId);
+                $review = $this->reviewHelper->createReview($storeId);
                 $progress->advance();
             }
 
@@ -86,16 +85,15 @@ class Product extends Command
 
     /**
      * {@inheritdoc}
-     * xigen:faker:product [-w|--website WEBSITE] [-l|--limit [LIMIT]] [-t|--type [TYPE]] [--] <generate>.
+     * xigen:faker:review [-s|--store STORE] [-l|--limit [LIMIT]] [--] <generate>.
      */
     protected function configure()
     {
-        $this->setName('xigen:faker:product');
-        $this->setDescription('Generate fake product');
+        $this->setName('xigen:faker:review');
+        $this->setDescription('Generate fake review');
         $this->setDefinition([
             new InputArgument(self::GENERATE_ARGUMENT, InputArgument::REQUIRED, 'Generate'),
-            new InputOption(self::WEBSITE_OPTION, '-w', InputOption::VALUE_REQUIRED, 'Website Id'),
-            new InputOption(self::TYPE_OPTION, '-t', InputOption::VALUE_REQUIRED, 'Type Id'),
+            new InputOption(self::STORE_OPTION, '-s', InputOption::VALUE_REQUIRED, 'Store Id'),
             new InputOption(self::LIMIT_OPTION, '-l', InputOption::VALUE_OPTIONAL, 'Limit'),
 
         ]);

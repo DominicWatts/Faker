@@ -9,14 +9,50 @@ use Magento\Framework\App\Helper\AbstractHelper;
  */
 class Customer extends AbstractHelper
 {
-    private $customerInterfaceFactory;
-    private $customerRepositoryInterface;
-    private $addressInterfaceFactory;
-    private $addressRepositoryInterface;
-    private $regionInterface;
-    private $encryptorInterface;
-    private $faker;
-    private $logger;
+    /**
+     * @var \Magento\Customer\Api\Data\CustomerInterfaceFactory
+     */
+    protected $customerInterfaceFactory;
+
+    /**
+     * @var \Magento\Customer\Api\CustomerRepositoryInterface
+     */
+    protected $customerRepositoryInterface;
+
+    /**
+     * @var \Magento\Customer\Api\Data\AddressInterfaceFactory
+     */
+    protected $addressInterfaceFactory;
+
+    /**
+     * @var \Magento\Customer\Api\AddressRepositoryInterface
+     */
+    protected $addressRepositoryInterface;
+
+    /**
+     * @var \Magento\Customer\Api\Data\RegionInterface
+     */
+    protected $regionInterface;
+
+    /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
+     */
+    protected $encryptorInterface;
+
+    /**
+     * @var \Faker\Generator
+     */
+    protected $faker;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var \Magento\Customer\Model\ResourceModel\Customer\CollectionFactory
+     */
+    protected $customerCollectionFactory;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context

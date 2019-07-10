@@ -7,6 +7,7 @@
                 <item name="Product" xsi:type="object">Xigen\Faker\Console\Command\Product</item>
                 <item name="Category" xsi:type="object">Xigen\Faker\Console\Command\Category</item>
                 <item name="Order" xsi:type="object">Xigen\Faker\Console\Command\Order</item>
+                <item name="Review" xsi:type="object">Xigen\Faker\Console\Command\Review</item>
             </argument>
         </arguments>
     </type>
