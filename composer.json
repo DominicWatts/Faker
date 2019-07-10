@@ -3,7 +3,7 @@
     "description": "Console based fake data generator - just generate what you need",
     "type": "magento2-module",
     "license": "proprietary",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "authors": [
         {
             "name": "Dominic Xigen",

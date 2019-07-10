@@ -5,7 +5,7 @@ namespace Xigen\Faker\Helper;
 use Magento\Framework\App\Helper\AbstractHelper;
 
 /**
- * Category helper
+ * Category helper.
  */
 class Category extends AbstractHelper
 {
@@ -96,7 +96,7 @@ class Category extends AbstractHelper
         $collection = $this->categoryCollectionFactory
             ->create()
             ->addAttributeToSelect('*')
-            ->addAttributeToFilter('entity_id', ['gt' => 2])
+            ->addAttributeToFilter('entity_id', ['gt' => 1])
             ->setPageSize($limit);
 
         $collection->getSelect()->order('RAND()');
