@@ -12,11 +12,65 @@ class Product extends AbstractHelper
     const ATTRIBUTE_SET_ID = 4;
     const PLACEHOLDER_SOURCE = 'http://lorempixel.com/1000/1000';
 
-    private $faker;
-    private $logger;
-    private $productInterfaceFactory;
-    private $productRepositoryInterface;
-    private $stockRegistryInterface;
+    /**
+     * @var \Faker\Generator
+     */
+    protected $faker;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var \Magento\Catalog\Api\Data\ProductInterfaceFactory
+     */
+    protected $productInterfaceFactory;
+
+    /**
+     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     */
+    protected $productRepositoryInterface;
+
+    /**
+     * @var \Magento\CatalogInventory\Api\StockRegistryInterface
+     */
+    protected $stockRegistryInterface;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     */
+    protected $productCollectionFactory;
+
+    /**
+     * @var \Magento\Catalog\Api\Data\ProductLinkInterfaceFactory
+     */
+    protected $productLinkInterfaceFactory;
+
+    /**
+     * @var \Magento\Catalog\Model\Product\Gallery\Processor
+     */
+    protected $galleryProcessor;
+
+    /**
+     * @var \Magento\Framework\Filesystem\Io\File
+     */
+    protected $file;
+
+    /**
+     * @var \Magento\Framework\App\Filesystem\DirectoryList
+     */
+    protected $directoryList;
+
+    /**
+     * @var \Magento\Catalog\Api\CategoryLinkManagementInterface
+     */
+    protected $categoryLinkManagementInterface;
+
+    /**
+     * @var \Xigen\Faker\Helper\Category
+     */
+    protected $categoryHelper;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context

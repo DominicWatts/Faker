@@ -59,3 +59,13 @@ php/bin magento xigen:faker:order generate
 php/bin magento xigen:faker:order -s 1 generate
 
 php/bin magento xigen:faker:order -s 1 -l 1 generate
+
+## Generate Review ##
+
+`xigen:faker:review [-s|--store STORE] [-l|--limit [LIMIT]] [--] <generate>`
+
+php/bin magento xigen:faker:review generate
+
+php/bin magento xigen:faker:review -s 1 generate
+
+php/bin magento xigen:faker:review -s 1 -l 10 generate

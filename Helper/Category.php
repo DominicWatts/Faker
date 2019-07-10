@@ -9,8 +9,35 @@ use Magento\Framework\App\Helper\AbstractHelper;
  */
 class Category extends AbstractHelper
 {
-    private $faker;
-    private $logger;
+    /**
+     * @var \Faker\Generator
+     */
+    protected $faker;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var \Magento\Catalog\Api\Data\CategoryInterfaceFactory
+     */
+    protected $categoryInterfaceFactory;
+
+    /**
+     * @var \Magento\Catalog\Api\CategoryRepositoryInterface
+     */
+    protected $categoryRepositoryInterface;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory
+     */
+    protected $categoryCollectionFactory;
+
+    /**
+     * @var \Magento\Catalog\Model\CategoryFactory
+     */
+    protected $categoryFactory;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context

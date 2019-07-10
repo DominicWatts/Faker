@@ -11,13 +11,55 @@ use Magento\Sales\Model\Service\InvoiceService;
  */
 class Order extends AbstractHelper
 {
-    private $faker;
-    private $logger;
-    private $customerHelper;
-    private $productHelper;
-    private $storeManagerInterface;
-    private $cartRepositoryInterface;
-    private $cartManagementInterface;
+    /**
+     * @var \Faker\Generator
+     */
+    protected $faker;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var \Xigen\Faker\Helper\Customer
+     */
+    protected $customerHelper;
+
+    /**
+     * @var \Xigen\Faker\Helper\Product
+     */
+    protected $productHelper;
+
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $storeManagerInterface;
+
+    /**
+     * @var \Magento\Quote\Api\CartRepositoryInterface
+     */
+    protected $cartRepositoryInterface;
+
+    /**
+     * @var \Magento\Customer\Model\AddressFactory
+     */
+    protected $addressFactory;
+
+    /**
+     * @var \Magento\Sales\Api\OrderRepositoryInterface
+     */
+    protected $orderRepositoryInterface;
+
+    /**
+     * @var \Magento\Framework\DB\TransactionFactory
+     */
+    protected $transactionFactory;
+
+    /**
+     * @var \Magento\Sales\Model\Convert\Order
+     */
+    protected $convertOrder;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
