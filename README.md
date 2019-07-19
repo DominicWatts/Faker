@@ -24,7 +24,7 @@ php/bin magento xigen:faker:customer generate
 
 php/bin magento xigen:faker:customer -w 1 generate
 
-php/bin magento xigen:faker:csutomer -w 1 -l 10 generate
+php/bin magento xigen:faker:customer -w 1 -l 10 generate
 
 ## Generate Product ##
 
