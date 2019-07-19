@@ -39,6 +39,13 @@ class Product extends Command
      */
     protected $productHelper;
 
+    /**
+     * Product constructor.
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Framework\App\State $state
+     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
+     * @param \Xigen\Faker\Helper\Product $productHelper
+     */
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\App\State $state,
@@ -68,7 +75,7 @@ class Product extends Command
         $limit = $this->input->getOption(self::LIMIT_OPTION) ?: 5;
 
         if ($generate) {
-            $this->output->writeln('['.$this->dateTime->gmtDate().'] Start');
+            $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
             $progress = new ProgressBar($this->output, $limit);
             $progress->start();
@@ -80,7 +87,7 @@ class Product extends Command
 
             $progress->finish();
             $this->output->writeln('');
-            $this->output->writeln('['.$this->dateTime->gmtDate().'] Finish');
+            $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Finish');
         }
     }
 

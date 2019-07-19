@@ -35,7 +35,14 @@ class Review extends AbstractHelper
     protected $storeManagerInterface;
 
     /**
+     * Review constructor.
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Review\Model\ResourceModel\Review\CollectionFactory $reviewCollectionFactory
+     * @param \Magento\Review\Model\ReviewFactory $reviewFactory
+     * @param Customer $customerHelper
+     * @param Product $productHelper
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -59,23 +66,21 @@ class Review extends AbstractHelper
 
     /**
      * Create random review.
-     *
      * @param int $storeId
-     *
      * @return \Magento\Review\Model\Data\Review
      */
     public function createReview($storeId = 1)
     {
         $product = $this->productHelper
             ->getRandomIds(1);
-        
+
         $stores = $this->storeManagerInterface->getStores(true, false);
         foreach ($stores as $store) {
             if ($store->getStoreId() == $storeId) {
                 $website = $store->getWebsiteId();
             }
         }
-        
+
         $customer = $this->customerHelper
             ->getRandomCustomerId(1, $website);
 

@@ -73,7 +73,19 @@ class Product extends AbstractHelper
     protected $categoryHelper;
 
     /**
+     * Product constructor.
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Catalog\Api\Data\ProductInterfaceFactory $productInterfaceFactory
+     * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface
+     * @param \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface
+     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param \Magento\Catalog\Api\Data\ProductLinkInterfaceFactory $productLinkInterfaceFactory
+     * @param \Magento\Catalog\Model\Product\Gallery\Processor $galleryProcessor
+     * @param \Magento\Framework\Filesystem\Io\File $file
+     * @param \Magento\Framework\App\Filesystem\DirectoryList $directoryList
+     * @param \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagementInterface
+     * @param Category $categoryHelper
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -107,9 +119,7 @@ class Product extends AbstractHelper
 
     /**
      * Create random product.
-     *
      * @param int $websiteId
-     *
      * @return \Magento\Catalog\Model\Product\Interceptor
      */
     public function createProduct($websiteId = 1, $typeId = \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE)
@@ -121,7 +131,7 @@ class Product extends AbstractHelper
         $quantity = rand(1, 20);
         $product = $this->productInterfaceFactory
             ->create()
-            ->setSku('FAKER-'.strtoupper($this->faker->word).'-'.rand(1000, 9999))
+            ->setSku('FAKER-' . strtoupper($this->faker->word) . '-' . rand(1000, 9999))
             ->setName(ucwords($this->faker->words(rand(1, 5), true)))
             ->setDecription($this->faker->paragraphs(rand(1, 4), true))
             ->setShortDescription($this->faker->paragraph)
@@ -141,7 +151,7 @@ class Product extends AbstractHelper
             ->setWebsiteIds([$websiteId])
             ->setStockData([
                 'is_in_stock' => $quantity > 0 ? 1 : 0,
-                'qty'         => $quantity,
+                'qty' => $quantity,
             ]);
 
         if ($this->getRandomTrueOrFalse()) {
@@ -169,9 +179,7 @@ class Product extends AbstractHelper
 
     /**
      * Reload product [might not actually need this].
-     *
      * @param $product
-     *
      * @return \Magento\Product\Model\Data\Product
      */
     public function reloadProduct(\Magento\Catalog\Model\Product\Interceptor $product)
@@ -189,7 +197,6 @@ class Product extends AbstractHelper
 
     /**
      * Array of valid product types.
-     *
      * @return array
      */
     public function getTypeArray()
@@ -206,7 +213,6 @@ class Product extends AbstractHelper
 
     /**
      * Get random link string.
-     *
      * @return string
      */
     public function getRandomLink()
@@ -223,10 +229,8 @@ class Product extends AbstractHelper
 
     /**
      * Create array of random product links.
-     *
      * @param \Magento\Product\Model\Data\Product $product
-     * @param int                                 $limit
-     *
+     * @param int $limit
      * @return array
      */
     public function createProductLinkArray(\Magento\Catalog\Model\Product\Interceptor $product, $limit = 1)
@@ -248,7 +252,6 @@ class Product extends AbstractHelper
 
     /**
      * Randomise true or false.
-     *
      * @return bool
      */
     public function getRandomTrueOrFalse()
@@ -258,9 +261,7 @@ class Product extends AbstractHelper
 
     /**
      * Return array of random SKUs.
-     *
      * @param int $limit
-     *
      * @return array
      */
     public function getRandomSku($limit = 1)
@@ -276,9 +277,7 @@ class Product extends AbstractHelper
 
     /**
      * Return array of random IDs.
-     *
      * @param int $limit
-     *
      * @return array
      */
     public function getRandomIds($limit = 1)
@@ -294,9 +293,7 @@ class Product extends AbstractHelper
 
     /**
      * Return collection of random products.
-     *
      * @param int $limit
-     *
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
     public function getRandomProduct($limit = 1)
@@ -313,10 +310,8 @@ class Product extends AbstractHelper
 
     /**
      * Add dummy images.
-     *
      * @param \Magento\Catalog\Model\Product\Interceptor $product
-     * @param int                                        $limit
-     *
+     * @param int $limit
      * @return void
      */
     public function addImages(\Magento\Catalog\Model\Product\Interceptor $product, $limit = 1)
@@ -329,26 +324,24 @@ class Product extends AbstractHelper
 
     /**
      * Add image from Url.
-     *
      * @param Product $product
-     * @param string  $imageUrl
-     * @param array   $imageType
-     * @param bool    $visible
-     *
+     * @param string $imageUrl
+     * @param array $imageType
+     * @param bool $visible
      * @return bool
      */
     public function addImageFromUrl($product, $imageUrl, $visible = false, $imageType = [])
     {
         $tmpDir = $this->getMediaDirTmpDir();
         $this->file->checkAndCreateFolder($tmpDir);
-        $newFileName = $tmpDir.basename($imageUrl);
+        $newFileName = $tmpDir . basename($imageUrl);
         /** read file from URL and copy it to the new destination */
         $result = $this->file->read($imageUrl, $newFileName);
-        $this->file->cp($newFileName, $newFileName.'.jpg');
+        $this->file->cp($newFileName, $newFileName . '.jpg');
         if ($result) {
             try {
                 // $product->addImageToMediaGallery($newFileName . '.jpg', $imageType, true, $visible);
-                $this->galleryProcessor->addImage($product, $newFileName.'.jpg', $imageType, false, $visible);
+                $this->galleryProcessor->addImage($product, $newFileName . '.jpg', $imageType, false, $visible);
             } catch (\Exception $e) {
                 $this->logger->critical($e);
             }
@@ -359,21 +352,18 @@ class Product extends AbstractHelper
 
     /**
      * Media directory name for the temporary file storage pub/media/tmp.
-     *
      * @return string
      */
     protected function getMediaDirTmpDir()
     {
         return $this->directoryList->getPath(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA)
-            .DIRECTORY_SEPARATOR.'xigen'.DIRECTORY_SEPARATOR;
+            . DIRECTORY_SEPARATOR . 'xigen' . DIRECTORY_SEPARATOR;
     }
 
     /**
      * Assign product to category.
-     *
      * @param \Magento\Catalog\Model\Product $product
-     * @param array                          $categoryIds
-     *
+     * @param array $categoryIds
      * @return void
      */
     public function assignProductToCategory($product, $categoryIds = [])
@@ -388,9 +378,7 @@ class Product extends AbstractHelper
 
     /**
      * Get product by Id.
-     *
      * @param int $limit
-     *
      * @return \Magento\Catalog\Model\Data\Product
      */
     public function getById($productId, $editMode = false, $storeId = null, $forceReload = false)
