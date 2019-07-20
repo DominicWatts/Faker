@@ -55,7 +55,16 @@ class Customer extends AbstractHelper
     protected $customerCollectionFactory;
 
     /**
+     * Customer constructor.
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Customer\Api\Data\CustomerInterfaceFactory $customerInterfaceFactory
+     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface
+     * @param \Magento\Customer\Api\Data\AddressInterfaceFactory $addressInterfaceFactory
+     * @param \Magento\Customer\Api\AddressRepositoryInterface $addressRepositoryInterface
+     * @param \Magento\Customer\Api\Data\RegionInterface $regionInterface
+     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptorInterface
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Customer\Model\ResourceModel\Customer\CollectionFactory $customerCollectionFactory
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -83,9 +92,7 @@ class Customer extends AbstractHelper
 
     /**
      * Create random customer.
-     *
      * @param int $websiteId
-     *
      * @return \Magento\Customer\Model\Data\Customer
      */
     public function createCustomer($websiteId = 1)
@@ -109,9 +116,7 @@ class Customer extends AbstractHelper
 
     /**
      * Create address for supplied customerId.
-     *
      * @param \Magento\Customer\Model\Data\Customer $customer
-     *
      * @return \Magento\Customer\Model\Address
      */
     public function createCustomerAddress(\Magento\Customer\Model\Data\Customer $customer)
@@ -145,10 +150,8 @@ class Customer extends AbstractHelper
 
     /**
      * Return array of random Customer IDs.
-     *
      * @param int $limit
      * @param int $websiteId
-     *
      * @return array
      */
     public function getRandomCustomerId($limit = 1, $websiteId = 1)
@@ -164,10 +167,8 @@ class Customer extends AbstractHelper
 
     /**
      * Return collection of random products.
-     *
      * @param int $limit
      * @param int $websiteId
-     *
      * @return \Magento\Catalog\Model\ResourceModel\Customer\Collection
      */
     public function getRandomCustomer($limit = 1, $websiteId = 1)
@@ -188,9 +189,7 @@ class Customer extends AbstractHelper
 
     /**
      * Get customer by Id.
-     *
      * @param int $customerId
-     *
      * @return \Magento\Customer\Model\Data\Customer
      */
     public function getById($customerId)

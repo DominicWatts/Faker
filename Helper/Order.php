@@ -62,7 +62,17 @@ class Order extends AbstractHelper
     protected $convertOrder;
 
     /**
+     * Order constructor.
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param Customer $customerHelper
+     * @param Product $productHelper
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
+     * @param \Magento\Quote\Api\CartRepositoryInterface $cartRepositoryInterface
+     * @param \Magento\Customer\Model\AddressFactory $addressFactory
+     * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface
+     * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
+     * @param \Magento\Sales\Model\Convert\Order $convertOrder
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -93,9 +103,7 @@ class Order extends AbstractHelper
 
     /**
      * Create random product.
-     *
      * @param int $storeId
-     *
      * @return \Magento\Catalog\Model\Order\Interceptor
      */
     public function createOrder($storeId = 1)
@@ -185,9 +193,7 @@ class Order extends AbstractHelper
 
     /**
      * Generate invoice from order Id.
-     *
      * @param int $orderId
-     *
      * @return void
      */
     public function generateInvoice($orderId)
@@ -224,9 +230,7 @@ class Order extends AbstractHelper
 
     /**
      * Generate shipment from order ID.
-     *
      * @param int $orderId
-     *
      * @return void
      */
     public function generateShipment($orderId)
@@ -265,7 +269,6 @@ class Order extends AbstractHelper
 
     /**
      * Randomise true or false.
-     *
      * @return bool
      */
     public function getRandomTrueOrFalse()
@@ -275,10 +278,8 @@ class Order extends AbstractHelper
 
     /**
      * Return array of random Customer IDs.
-     *
      * @param int $limit
      * @param int $websiteId
-     *
      * @return array
      */
     public function getRandomCustomerId($limit = 1, $websiteId = 1)
@@ -288,10 +289,8 @@ class Order extends AbstractHelper
 
     /**
      * Return collection of random customers.
-     *
      * @param int $limit
      * @param int $websiteId
-     *
      * @return \Magento\Catalog\Model\ResourceModel\Customer\Collection
      */
     public function getRandomCustomerCollection($limit = 1, $websiteId = 1)
@@ -301,9 +300,7 @@ class Order extends AbstractHelper
 
     /**
      * Return single random customer.
-     *
      * @param int $websiteId
-     *
      * @return \Magento\Customer\Model\Customer\Interceptor
      */
     public function getRandomCustomer($websiteId = 1)
@@ -318,9 +315,7 @@ class Order extends AbstractHelper
 
     /**
      * Return array of random product IDs.
-     *
      * @param int $limit
-     *
      * @return array
      */
     public function getRandomProductId($limit = 1)
@@ -330,12 +325,10 @@ class Order extends AbstractHelper
 
     /**
      * Get product by Id.
-     *
-     * @param int  $productId
+     * @param int $productId
      * @param bool $editMode
-     * @param int  $storeId
+     * @param int $storeId
      * @param bool $forceReload
-     *
      * @return \Magento\Catalog\Model\Data\Product
      */
     public function getProductById($productId, $editMode = false, $storeId = null, $forceReload = false)
@@ -345,9 +338,7 @@ class Order extends AbstractHelper
 
     /**
      * Get customer by Id.
-     *
      * @param int $customerId
-     *
      * @return \Magento\Catalog\Model\Data\Product
      */
     public function getCustomerById($customerId)
@@ -357,9 +348,7 @@ class Order extends AbstractHelper
 
     /**
      * Get order by Id.
-     *
      * @param int $orderId
-     *
      * @return \Magento\Sales\Model\Data\Order
      */
     public function getById($orderId)

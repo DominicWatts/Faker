@@ -40,7 +40,13 @@ class Category extends AbstractHelper
     protected $categoryFactory;
 
     /**
+     * Category constructor.
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Catalog\Api\Data\CategoryInterfaceFactory $categoryInterfaceFactory
+     * @param \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepositoryInterface
+     * @param \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory
+     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -62,9 +68,7 @@ class Category extends AbstractHelper
 
     /**
      * Create random category.
-     *
      * @param int $storeId
-     *
      * @return \Magento\Category\Model\Data\Category
      */
     public function createCategory($storeId = 0)
@@ -95,9 +99,7 @@ class Category extends AbstractHelper
 
     /**
      * Return array of random IDs.
-     *
      * @param int $limit
-     *
      * @return array
      */
     public function getRandomCategoryId($limit = 1)
@@ -113,9 +115,7 @@ class Category extends AbstractHelper
 
     /**
      * Return collection of random categories.
-     *
      * @param int $limit
-     *
      * @return \Magento\Catalog\Model\ResourceModel\Category\Collection
      */
     public function getRandomCategory($limit = 1)
