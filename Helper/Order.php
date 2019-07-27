@@ -182,7 +182,7 @@ class Order extends AbstractHelper
             $orderId = $this->cartManagementInterface->placeOrder($quote->getId());
             $this->generateInvoice($orderId);
             if ($this->getRandomTrueOrFalse()) {
-                $this->generateShipment($orderId);
+                $this->generateShipment($orderId, $this->getRandomTrueOrFalse());
             }
 
             return $orderId;
@@ -233,7 +233,7 @@ class Order extends AbstractHelper
      * @param int $orderId
      * @return void
      */
-    public function generateShipment($orderId)
+    public function generateShipment($orderId, $doNotify = true)
     {
         $order = $this->getById($orderId);
 
@@ -261,7 +261,18 @@ class Order extends AbstractHelper
             // Save created Order Shipment
             $orderShipment->save();
             $orderShipment->getOrder()->save();
-            $orderShipment->save();
+
+            if ($doNotify) {
+                $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $this->_objectManager->create(\Magento\Shipping\Model\ShipmentNotifier::class)
+                    ->notify($orderShipment);
+                $orderShipment->save();
+            }
+            $order->addStatusToHistory($order->getStatus(), 'Order has been marked as complete');
+            $order->save();
+
+            return true;
+
         } catch (\Exception $e) {
             $this->logger->critical($e);
         }
