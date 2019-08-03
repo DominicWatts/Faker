@@ -272,7 +272,6 @@ class Order extends AbstractHelper
             $order->save();
 
             return true;
-
         } catch (\Exception $e) {
             $this->logger->critical($e);
         }
