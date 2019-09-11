@@ -3,11 +3,11 @@
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="Customer" xsi:type="object">Xigen\Faker\Console\Command\Customer</item>
-                <item name="Product" xsi:type="object">Xigen\Faker\Console\Command\Product</item>
-                <item name="Category" xsi:type="object">Xigen\Faker\Console\Command\Category</item>
-                <item name="Order" xsi:type="object">Xigen\Faker\Console\Command\Order</item>
-                <item name="Review" xsi:type="object">Xigen\Faker\Console\Command\Review</item>
+                <item name="Faker_Customer" xsi:type="object">Xigen\Faker\Console\Command\Customer</item>
+                <item name="Faker_Product" xsi:type="object">Xigen\Faker\Console\Command\Product</item>
+                <item name="Faker_Category" xsi:type="object">Xigen\Faker\Console\Command\Category</item>
+                <item name="Faker_Order" xsi:type="object">Xigen\Faker\Console\Command\Order</item>
+                <item name="Faker_Review" xsi:type="object">Xigen\Faker\Console\Command\Review</item>
             </argument>
         </arguments>
     </type>
