@@ -2,12 +2,14 @@
 
 namespace Xigen\Faker\Console\Command;
 
+use Magento\Framework\Console\Cli;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
  * Order console
@@ -74,6 +76,16 @@ class Order extends Command
         $limit = $this->input->getOption(self::LIMIT_OPTION) ?: 5;
 
         if ($generate) {
+            $helper = $this->getHelper('question');
+            $question = new ConfirmationQuestion(
+                (string) __('You are about to generate fake order data. Are you sure? [y/N]'),
+                false
+            );
+    
+            if (!$helper->ask($this->input, $this->output, $question) && $this->input->isInteractive()) {
+                return Cli::RETURN_FAILURE;
+            }
+            
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
             $progress = new ProgressBar($this->output, $limit);
