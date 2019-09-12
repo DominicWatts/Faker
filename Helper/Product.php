@@ -334,7 +334,8 @@ class Product extends AbstractHelper
     {
         $tmpDir = $this->getMediaDirTmpDir();
         $this->file->checkAndCreateFolder($tmpDir);
-        $newFileName = $tmpDir . basename($imageUrl);
+        $pathInfo = $this->file->getPathInfo($imageUrl);
+        $newFileName = $tmpDir . $pathInfo["basename"];
         /** read file from URL and copy it to the new destination */
         $result = $this->file->read($imageUrl, $newFileName);
         $this->file->cp($newFileName, $newFileName . '.jpg');

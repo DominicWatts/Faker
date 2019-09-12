@@ -1,0 +1,10 @@
+preset: psr2
+risky: false
+finder:
+  exclude:
+    - modules
+    - node_modules
+    - storage
+    - vendor
+  name: "*.php"
+  not-name: "*.blade.php"
