@@ -73,6 +73,11 @@ class Product extends AbstractHelper
     protected $categoryHelper;
 
     /**
+     * @var \Magento\CatalogInventory\Helper\Stock
+     */
+    protected $stockFilter;
+
+    /**
      * Product constructor.
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Psr\Log\LoggerInterface $logger
@@ -85,7 +90,8 @@ class Product extends AbstractHelper
      * @param \Magento\Framework\Filesystem\Io\File $file
      * @param \Magento\Framework\App\Filesystem\DirectoryList $directoryList
      * @param \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagementInterface
-     * @param Category $categoryHelper
+     * @param \Xigen\Faker\Helper\Category $categoryHelper
+     * @param \Magento\CatalogInventory\Helper\Stock $stockFilter
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -99,7 +105,8 @@ class Product extends AbstractHelper
         \Magento\Framework\Filesystem\Io\File $file,
         \Magento\Framework\App\Filesystem\DirectoryList $directoryList,
         \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagementInterface,
-        \Xigen\Faker\Helper\Category $categoryHelper
+        \Xigen\Faker\Helper\Category $categoryHelper,
+        \Magento\CatalogInventory\Helper\Stock $stockFilter
     ) {
         // https://packagist.org/packages/fzaninotto/faker
         $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
@@ -114,6 +121,7 @@ class Product extends AbstractHelper
         $this->directoryList = $directoryList;
         $this->categoryLinkManagementInterface = $categoryLinkManagementInterface;
         $this->categoryHelper = $categoryHelper;
+        $this->stockFilter = $stockFilter;
         parent::__construct($context);
     }
 
@@ -278,11 +286,12 @@ class Product extends AbstractHelper
     /**
      * Return array of random IDs.
      * @param int $limit
+     * @param bool $inStockOnly
      * @return array
      */
-    public function getRandomIds($limit = 1)
+    public function getRandomIds($limit = 1, $inStockOnly = false, $simpleOnly = true)
     {
-        $products = $this->getRandomProduct($limit);
+        $products = $this->getRandomProduct($limit, $inStockOnly, $simpleOnly);
         $ids = [];
         foreach ($products as $product) {
             $ids[] = $product->getId();
@@ -294,14 +303,23 @@ class Product extends AbstractHelper
     /**
      * Return collection of random products.
      * @param int $limit
+     * @param bool $inStockOnly
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    public function getRandomProduct($limit = 1)
+    public function getRandomProduct($limit = 1, $inStockOnly = false, $simpleOnly = true)
     {
         $collection = $this->productCollectionFactory
             ->create()
             ->addAttributeToSelect('*')
             ->setPageSize($limit);
+
+        if ($simpleOnly) {
+            $collection->addAttributeToFilter('type_id', ['eq' => \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE]);
+        }
+        
+        if ($inStockOnly) {
+            $this->stockFilter->addInStockFilterToCollection($collection);
+        }
 
         $collection->getSelect()->order('RAND()');
 

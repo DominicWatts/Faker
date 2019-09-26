@@ -62,6 +62,11 @@ class Order extends AbstractHelper
     protected $convertOrder;
 
     /**
+     * @var \Magento\CatalogInventory\Api\StockStateInterface
+     */
+    protected $stockItem;
+
+    /**
      * Order constructor.
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Psr\Log\LoggerInterface $logger
@@ -73,6 +78,7 @@ class Order extends AbstractHelper
      * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface
      * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
      * @param \Magento\Sales\Model\Convert\Order $convertOrder
+     * @param \Magento\CatalogInventory\Api\StockStateInterface $stockItem
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -84,7 +90,8 @@ class Order extends AbstractHelper
         \Magento\Customer\Model\AddressFactory $addressFactory,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface,
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
-        \Magento\Sales\Model\Convert\Order $convertOrder
+        \Magento\Sales\Model\Convert\Order $convertOrder,
+        \Magento\CatalogInventory\Api\StockStateInterface $stockItem
     ) {
         // https://packagist.org/packages/fzaninotto/faker
         $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
@@ -97,6 +104,7 @@ class Order extends AbstractHelper
         $this->orderRepositoryInterface = $orderRepositoryInterface;
         $this->transactionFactory = $transactionFactory;
         $this->convertOrder = $convertOrder;
+        $this->stockItem = $stockItem;
 
         parent::__construct($context);
     }
@@ -138,17 +146,26 @@ class Order extends AbstractHelper
         $quote->setCurrency();
         $quote->assignCustomer($customer);
 
-        $productIds = $this->getRandomProductId(rand(1, 10));
+        $productIds = $this->getRandomProductId(rand(1, 10), true);
 
         if (empty($productIds)) {
             new \Exception(__('Please add some produts for this store first'));
         }
 
         foreach ($productIds as $productId) {
-            $product = $this->getProductById($productId);
-            $product->setStore($store);
-            $product->setPrice($this->faker->randomFloat(4, 0, 100));
-            $quote->addProduct($product, (int) (rand(1, 2)));
+            try {
+                $product = $this->getProductById($productId);
+                if ($product->isSalable()) {
+                    $qty = $this->stockItem->getStockQty($product->getId(), $websiteId);
+                    if ($qty > 1) {
+                        $product->setStore($store);
+                        $product->setPrice($this->faker->randomFloat(4, 0, 100));
+                        $quote->addProduct($product, (int) (rand(1, 2)));
+                    }
+                }
+            } catch (\Exception $e) {
+                $this->logger->critical($e);
+            }
         }
 
         $billingAddress = $this->addressFactory->create()->load($customer->getDefaultBilling());
@@ -171,7 +188,6 @@ class Order extends AbstractHelper
             $this->cartRepositoryInterface->save($quote);
         } catch (\Exception $e) {
             $this->logger->critical($e);
-
             return;
         }
 
@@ -326,11 +342,12 @@ class Order extends AbstractHelper
     /**
      * Return array of random product IDs.
      * @param int $limit
+     * @param bool $inStockOnly
      * @return array
      */
-    public function getRandomProductId($limit = 1)
+    public function getRandomProductId($limit = 1, $inStockOnly = false, $simpleOnly = true)
     {
-        return $this->productHelper->getRandomIds($limit);
+        return $this->productHelper->getRandomIds($limit, $inStockOnly, $simpleOnly);
     }
 
     /**
