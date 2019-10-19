@@ -76,6 +76,8 @@ class Review extends Command
         $limit = $this->input->getOption(self::LIMIT_OPTION) ?: 5;
 
         if ($generate) {
+            $helper = $this->getHelper('question');
+            
             $question = new ConfirmationQuestion(
                 (string) __('You are about to generate fake review data. Are you sure? [y/N]'),
                 false
