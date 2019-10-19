@@ -274,7 +274,7 @@ class Product extends AbstractHelper
      */
     public function getRandomSku($limit = 1)
     {
-        $products = $this->getRandomProduct($limit);
+        $products = $this->getRandomProduct($limit, false, true, ['sku']);
         $skus = [];
         foreach ($products as $product) {
             $skus[] = $product->getSku();
@@ -291,13 +291,7 @@ class Product extends AbstractHelper
      */
     public function getRandomIds($limit = 1, $inStockOnly = false, $simpleOnly = true)
     {
-        $products = $this->getRandomProduct($limit, $inStockOnly, $simpleOnly);
-        $ids = [];
-        foreach ($products as $product) {
-            $ids[] = $product->getId();
-        }
-
-        return $ids;
+        return $this->getRandomProduct($limit, $inStockOnly, $simpleOnly, [])->getAllIds();
     }
 
     /**
@@ -306,11 +300,11 @@ class Product extends AbstractHelper
      * @param bool $inStockOnly
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    public function getRandomProduct($limit = 1, $inStockOnly = false, $simpleOnly = true)
+    public function getRandomProduct($limit = 1, $inStockOnly = false, $simpleOnly = true, $attributes = [])
     {
         $collection = $this->productCollectionFactory
             ->create()
-            ->addAttributeToSelect('*')
+            ->addAttributeToSelect(empty($attributes) ? '*' : $attributes)
             ->setPageSize($limit);
 
         if ($simpleOnly) {
