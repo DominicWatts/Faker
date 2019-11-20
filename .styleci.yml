@@ -1,10 +1,61 @@
 preset: psr2
-risky: false
+
+risky: true
+
+enabled:
+  - alpha_ordered_imports
+  - align_phpdoc
+  - blank_line_after_opening_tag
+  - comment_to_phpdoc
+  - concat_with_spaces
+  - ereg_to_preg
+  - fully_qualified_strict_types
+  - include
+  - linebreak_after_opening_tag
+  - logical_operators
+  - no_blank_lines_after_phpdoc
+  - no_blank_lines_after_return
+  - no_empty_comment
+  - no_empty_phpdoc
+  - no_empty_statement
+  - no_extra_consecutive_blank_lines
+  - no_leading_import_slash
+  - no_leading_namespace_whitespace
+  - no_php4_constructor
+  - no_unused_imports
+  - no_useless_else
+  - no_useless_return
+  - normalize_index_brace
+  - phpdoc_add_missing_param_annotation
+  - phpdoc_annotation_without_dot
+  - phpdoc_indent
+  - phpdoc_inline_tag
+  - phpdoc_link_to_see
+  - phpdoc_no_access
+  - phpdoc_order
+  - phpdoc_return_self_reference
+  - phpdoc_scalar
+  - phpdoc_single_line_var_spacing
+  - phpdoc_to_comment
+  - phpdoc_trim
+  - phpdoc_type_to_var
+  - phpdoc_types
+  - phpdoc_var_without_name
+  - property_separation
+  - protected_to_private
+  - short_array_syntax
+  - short_scalar_cast
+  - standardize_not_equals
+  - string_line_ending
+  - ternary_operator_spaces
+  - whitespace_after_comma_in_array
+  
 finder:
   exclude:
     - modules
     - node_modules
     - storage
-    - vendor
-  name: "*.php"
-  not-name: "*.blade.php"
+    - vendor  
+  name:
+    - "*.phtml"
+    - "*.php"
