@@ -391,7 +391,10 @@ class Product extends AbstractHelper
 
     /**
      * Get product by Id.
-     * @param int $limit
+     * @param int $productId
+     * @param bool $editMode
+     * @param int $storeId
+     * @param bool $forceReload
      * @return \Magento\Catalog\Model\Data\Product
      */
     public function getById($productId, $editMode = false, $storeId = null, $forceReload = false)
@@ -400,7 +403,6 @@ class Product extends AbstractHelper
             return $this->productRepositoryInterface->getById($productId, $editMode, $storeId, $forceReload);
         } catch (\Exception $e) {
             $this->logger->critical($e);
-
             return false;
         }
     }
