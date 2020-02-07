@@ -128,7 +128,7 @@ class Product extends AbstractHelper
     /**
      * Create random product.
      * @param int $websiteId
-     * @param string $typeId 
+     * @param string $typeId
      * @param bool $applyImage
      * @return \Magento\Catalog\Model\Product\Interceptor
      */
