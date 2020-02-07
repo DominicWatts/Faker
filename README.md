@@ -30,9 +30,13 @@ php/bin magento xigen:faker:customer -w 1 -l 10 generate
 
 ### todo: link configurable/group to simples ###
 
-`xigen:faker:product [-w|--website WEBSITE] [-l|--limit [LIMIT]] [-t|--type [TYPE]] [--] <generate>`
+`xigen:faker:product [-w|--website WEBSITE] [-l|--limit [LIMIT]] [-t|--type [TYPE]] [--] <generate> <applyImage>`
 
 php/bin magento xigen:faker:product generate
+
+php/bin magento xigen:faker:product -l 10 generate
+
+php/bin magento xigen:faker:product -l 10 generate applyImage
 
 php/bin magento xigen:faker:product -w 1 generate
 

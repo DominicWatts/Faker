@@ -10,7 +10,7 @@ use Magento\Framework\App\Helper\AbstractHelper;
 class Product extends AbstractHelper
 {
     const ATTRIBUTE_SET_ID = 4;
-    const PLACEHOLDER_SOURCE = 'http://lorempixel.com/1000/1000';
+    const PLACEHOLDER_SOURCE = 'https://raw.githubusercontent.com/DominicWatts/ImageFetch/master/1000/';
 
     /**
      * @var \Faker\Generator
@@ -128,9 +128,11 @@ class Product extends AbstractHelper
     /**
      * Create random product.
      * @param int $websiteId
+     * @param string $typeId
+     * @param bool $applyImage
      * @return \Magento\Catalog\Model\Product\Interceptor
      */
-    public function createProduct($websiteId = 1, $typeId = \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE)
+    public function createProduct($websiteId = 1, $typeId = \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE, $applyImage)
     {
         if (!in_array($typeId, $this->getTypeArray())) {
             return;
@@ -168,11 +170,9 @@ class Product extends AbstractHelper
         }
 
         // images causes entire process to hang
-        /*
-        if ($this->getRandomTrueOrFalse()) {
+        if ($applyImage) {
             $this->addImages($product, rand(1, 4));
         }
-        */
 
         try {
             $product = $this->productRepositoryInterface->save($product);
@@ -332,7 +332,8 @@ class Product extends AbstractHelper
     public function addImages(\Magento\Catalog\Model\Product\Interceptor $product, $limit = 1)
     {
         for ($generate = 1; $generate <= $limit; $generate++) {
-            $this->addImageFromUrl($product, self::PLACEHOLDER_SOURCE, true, $generate == 1
+            $imageUrl = self::PLACEHOLDER_SOURCE . 'image-' . str_pad(rand(1, 20), 3, 0, STR_PAD_LEFT) . '.jpg';
+            $this->addImageFromUrl($product, $imageUrl, true, $generate == 1
                 ? ['image', 'small_image', 'thumbnail'] : []);
         }
     }
