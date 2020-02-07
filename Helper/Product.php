@@ -3,6 +3,7 @@
 namespace Xigen\Faker\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Catalog\Model\Product\Type;
 
 /**
  * Product helper
@@ -132,8 +133,11 @@ class Product extends AbstractHelper
      * @param bool $applyImage
      * @return \Magento\Catalog\Model\Product\Interceptor
      */
-    public function createProduct($websiteId = 1, $typeId = \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE, $applyImage)
-    {
+    public function createProduct(
+        $websiteId = 1,
+        $typeId = \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE,
+        $applyImage = true
+    ) {
         if (!in_array($typeId, $this->getTypeArray())) {
             return;
         }
