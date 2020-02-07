@@ -167,9 +167,12 @@ class Product extends AbstractHelper
             $product->setProductLinks($linkData);
         }
 
+        // images causes entire process to hang
+        /*
         if ($this->getRandomTrueOrFalse()) {
             $this->addImages($product, rand(1, 4));
         }
+        */
 
         try {
             $product = $this->productRepositoryInterface->save($product);
