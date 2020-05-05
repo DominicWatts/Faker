@@ -1,0 +1,9 @@
+name: PHPCompatibility
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: 7.0-7.3
+      run: docker run --rm -v $PWD:/code domw/phpcompatibility phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0-7.3 --colors --warning-severity=0 --report=full,summary --extensions=php,phtml ./

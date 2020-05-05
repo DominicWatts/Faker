@@ -1,0 +1,11 @@
+parameters:
+    level: 1
+    autoload_directories:
+        - Helper
+        - Plugin
+    excludes_analyse:
+        - 'vendor'
+    ignoreErrors:
+        - '#invalid typehint#'
+        - '#unknown class#'
+    reportUnmatchedIgnoredErrors: false
