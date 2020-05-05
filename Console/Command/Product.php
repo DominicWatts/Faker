@@ -84,7 +84,10 @@ class Product extends Command
             $helper = $this->getHelper('question');
                     
             $question = new ConfirmationQuestion(
-                (string) __('You are about to generate fake product data%1. Are you sure? [y/N]', (($image) ? ' with images' : '')),
+                (string) __(
+                    'You are about to generate fake product data%1. Are you sure? [y/N]',
+                    (($image) ? ' with images' : '')
+                ),
                 false
             );
 
