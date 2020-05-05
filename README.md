@@ -1,5 +1,11 @@
 # Faker extension #
 
+![phpcs](https://github.com/DominicWatts/Faker/workflows/phpcs/badge.svg)
+
+![PHPCompatibility](https://github.com/DominicWatts/Faker/workflows/PHPCompatibility/badge.svg)
+
+![PHPStan](https://github.com/DominicWatts/Faker/workflows/PHPStan/badge.svg)
+
 Magento 2 extension to generate fake data.
 
 This extension uses `fzaninotto/faker`
