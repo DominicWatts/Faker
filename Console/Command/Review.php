@@ -41,6 +41,16 @@ class Review extends Command
     protected $reviewHelper;
 
     /**
+     * @var InputInterface
+     */
+    protected $input;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
      * Review constructor.
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\App\State $state
@@ -77,12 +87,12 @@ class Review extends Command
 
         if ($generate) {
             $helper = $this->getHelper('question');
-            
+
             $question = new ConfirmationQuestion(
                 (string) __('You are about to generate fake review data. Are you sure? [y/N]'),
                 false
             );
-    
+
             if (!$helper->ask($this->input, $this->output, $question) && $this->input->isInteractive()) {
                 return Cli::RETURN_FAILURE;
             }

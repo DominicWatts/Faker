@@ -41,6 +41,15 @@ class Customer extends Command
     protected $customerHelper;
 
     /**
+     * @var InputInterface
+     */
+    protected $input;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+    /**
      * Customer constructor.
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\App\State $state
@@ -81,7 +90,7 @@ class Customer extends Command
                 (string) __('You are about to generate fake customer data. Are you sure? [y/N]'),
                 false
             );
-    
+
             if (!$helper->ask($this->input, $this->output, $question) && $this->input->isInteractive()) {
                 return Cli::RETURN_FAILURE;
             }
