@@ -3,7 +3,6 @@
 namespace Xigen\Faker\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Catalog\Model\Product\Type;
 
 /**
  * Product helper
@@ -317,7 +316,7 @@ class Product extends AbstractHelper
         if ($simpleOnly) {
             $collection->addAttributeToFilter('type_id', ['eq' => \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE]);
         }
-        
+
         if ($inStockOnly) {
             $this->stockFilter->addInStockFilterToCollection($collection);
         }

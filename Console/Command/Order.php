@@ -41,6 +41,16 @@ class Order extends Command
     protected $orderHelper;
 
     /**
+     * @var InputInterface
+     */
+    protected $input;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
      * Order constructor.
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\App\State $state
@@ -81,11 +91,11 @@ class Order extends Command
                 (string) __('You are about to generate fake order data. Are you sure? [y/N]'),
                 false
             );
-    
+
             if (!$helper->ask($this->input, $this->output, $question) && $this->input->isInteractive()) {
                 return Cli::RETURN_FAILURE;
             }
-            
+
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
             $progress = new ProgressBar($this->output, $limit);

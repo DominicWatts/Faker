@@ -30,6 +30,16 @@ class Review extends AbstractHelper
     protected $reviewFactory;
 
     /**
+     * @var \Xigen\Faker\Helper\Customer
+     */
+    protected $customerHelper;
+
+    /**
+     * @var \Xigen\Faker\Helper\Product
+     */
+    protected $productHelper;
+
+    /**
      * @var \Magento\Store\Model\StoreManagerInterface
      */
     protected $storeManagerInterface;

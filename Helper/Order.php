@@ -67,6 +67,21 @@ class Order extends AbstractHelper
     protected $stockItem;
 
     /**
+     * @var \Magento\Framework\App\ObjectManager
+     */
+    protected $_objectManager;
+
+    /**
+     * @var Magento\Quote\Api\CartManagementInterface
+     */
+    protected $cartManagementInterface;
+
+    /**
+     * @var Magento\Sales\Model\Service\InvoiceService
+     */
+    protected $invoiceService;
+
+    /**
      * Order constructor.
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Psr\Log\LoggerInterface $logger
