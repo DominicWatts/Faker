@@ -2,14 +2,20 @@
 
 namespace Xigen\Faker\Console\Command;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Xigen\Faker\Helper\Review as ReviewHelper;
 
 /**
  * Review console
@@ -51,22 +57,30 @@ class Review extends Command
     protected $output;
 
     /**
+     * @var ProgressBarFactory
+     */
+    protected $progressBarFactory;
+
+    /**
      * Review constructor.
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\App\State $state
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \Xigen\Faker\Helper\Review $reviewHelper
+     * @param LoggerInterface $logger
+     * @param State $state
+     * @param DateTime $dateTime
+     * @param ReviewHelper $reviewHelper
+     * @param ProgressBarFactory $progressBarFactory
      */
     public function __construct(
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Xigen\Faker\Helper\Review $reviewHelper
+        LoggerInterface $logger,
+        State $state,
+        DateTime $dateTime,
+        ReviewHelper $reviewHelper,
+        ProgressBarFactory $progressBarFactory
     ) {
         $this->logger = $logger;
         $this->state = $state;
         $this->dateTime = $dateTime;
         $this->reviewHelper = $reviewHelper;
+        $this->progressBarFactory = $progressBarFactory;
         parent::__construct();
     }
 
@@ -79,7 +93,7 @@ class Review extends Command
     ) {
         $this->input = $input;
         $this->output = $output;
-        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
+        $this->state->setAreaCode(Area::AREA_GLOBAL);
 
         $generate = $input->getArgument(self::GENERATE_ARGUMENT) ?: false;
         $storeId = $this->input->getOption(self::STORE_OPTION) ?: 1;
@@ -99,11 +113,26 @@ class Review extends Command
 
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
-            $progress = new ProgressBar($this->output, $limit);
-            $progress->start();
+            /** @var ProgressBar $progress */
+            $progress = $this->progressBarFactory->create(
+                [
+                    'output' => $this->output,
+                    'max' => $limit
+                ]
+            );
+
+            $progress->setFormat(
+                "%current%/%max% [%bar%] %percent:3s%% %elapsed% %memory:6s% \t| <info>%message%</info>"
+            );
+
+            if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
+                $progress->setOverwrite(false);
+            }
 
             for ($generate = 1; $generate <= $limit; $generate++) {
-                $review = $this->reviewHelper->createReview($storeId);
+                if ($review = $this->reviewHelper->createReview($storeId)) {
+                    $progress->setMessage((string) __('Review: %1', $review->getTitle()));
+                }
                 $progress->advance();
             }
 

@@ -2,7 +2,14 @@
 
 namespace Xigen\Faker\Helper;
 
+use Faker\Factory as Faker;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Api\Data\CategoryInterfaceFactory;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Psr\Log\LoggerInterface;
 
 /**
  * Category helper.
@@ -41,23 +48,22 @@ class Category extends AbstractHelper
 
     /**
      * Category constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Catalog\Api\Data\CategoryInterfaceFactory $categoryInterfaceFactory
-     * @param \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepositoryInterface
-     * @param \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param Context $context
+     * @param LoggerInterface $logger
+     * @param CategoryInterfaceFactory $categoryInterfaceFactory
+     * @param CategoryRepositoryInterface $categoryRepositoryInterface
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param CategoryFactory $categoryFactory
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Catalog\Api\Data\CategoryInterfaceFactory $categoryInterfaceFactory,
-        \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepositoryInterface,
-        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory
+        Context $context,
+        LoggerInterface $logger,
+        CategoryInterfaceFactory $categoryInterfaceFactory,
+        CategoryRepositoryInterface $categoryRepositoryInterface,
+        CollectionFactory $categoryCollectionFactory,
+        CategoryFactory $categoryFactory
     ) {
-        // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
+        $this->faker = Faker::create(Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->categoryInterfaceFactory = $categoryInterfaceFactory;
         $this->categoryRepositoryInterface = $categoryRepositoryInterface;
@@ -67,9 +73,10 @@ class Category extends AbstractHelper
     }
 
     /**
-     * Create random category.
+     * Create random category
      * @param int $storeId
-     * @return \Magento\Category\Model\Data\Category
+     * @return mixed
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function createCategory($storeId = 0)
     {
@@ -101,6 +108,7 @@ class Category extends AbstractHelper
      * Return array of random IDs.
      * @param int $limit
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getRandomCategoryId($limit = 1)
     {
@@ -117,6 +125,7 @@ class Category extends AbstractHelper
      * Return collection of random categories.
      * @param int $limit
      * @return \Magento\Catalog\Model\ResourceModel\Category\Collection
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getRandomCategory($limit = 1)
     {

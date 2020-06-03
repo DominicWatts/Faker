@@ -2,7 +2,25 @@
 
 namespace Xigen\Faker\Helper;
 
+use Faker\Factory as Faker;
+use Magento\Catalog\Api\CategoryLinkManagementInterface;
+use Magento\Catalog\Api\Data\ProductInterfaceFactory;
+use Magento\Catalog\Api\Data\ProductLinkInterfaceFactory;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product\Gallery\Processor;
+use Magento\Catalog\Model\Product\Interceptor;
+use Magento\Catalog\Model\Product\Type as ProductType;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\CatalogInventory\Helper\Stock;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Downloadable\Model\Product\Type as Downloadable;
+use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Filesystem\Io\File;
+use Magento\GroupedProduct\Model\Product\Type\Grouped;
+use Psr\Log\LoggerInterface;
 
 /**
  * Product helper
@@ -79,37 +97,36 @@ class Product extends AbstractHelper
 
     /**
      * Product constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Catalog\Api\Data\ProductInterfaceFactory $productInterfaceFactory
-     * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface
-     * @param \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Magento\Catalog\Api\Data\ProductLinkInterfaceFactory $productLinkInterfaceFactory
-     * @param \Magento\Catalog\Model\Product\Gallery\Processor $galleryProcessor
-     * @param \Magento\Framework\Filesystem\Io\File $file
-     * @param \Magento\Framework\App\Filesystem\DirectoryList $directoryList
-     * @param \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagementInterface
+     * @param Context $context
+     * @param LoggerInterface $logger
+     * @param ProductInterfaceFactory $productInterfaceFactory
+     * @param ProductRepositoryInterface $productRepositoryInterface
+     * @param StockRegistryInterface $stockRegistryInterface
+     * @param CollectionFactory $productCollectionFactory
+     * @param ProductLinkInterfaceFactory $productLinkInterfaceFactory
+     * @param Processor $galleryProcessor
+     * @param File $file
+     * @param DirectoryList $directoryList
+     * @param CategoryLinkManagementInterface $categoryLinkManagementInterface
      * @param \Xigen\Faker\Helper\Category $categoryHelper
-     * @param \Magento\CatalogInventory\Helper\Stock $stockFilter
+     * @param Stock $stockFilter
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Catalog\Api\Data\ProductInterfaceFactory $productInterfaceFactory,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
-        \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-        \Magento\Catalog\Api\Data\ProductLinkInterfaceFactory $productLinkInterfaceFactory,
-        \Magento\Catalog\Model\Product\Gallery\Processor $galleryProcessor,
-        \Magento\Framework\Filesystem\Io\File $file,
-        \Magento\Framework\App\Filesystem\DirectoryList $directoryList,
-        \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagementInterface,
-        \Xigen\Faker\Helper\Category $categoryHelper,
-        \Magento\CatalogInventory\Helper\Stock $stockFilter
+        Context $context,
+        LoggerInterface $logger,
+        ProductInterfaceFactory $productInterfaceFactory,
+        ProductRepositoryInterface $productRepositoryInterface,
+        StockRegistryInterface $stockRegistryInterface,
+        CollectionFactory $productCollectionFactory,
+        ProductLinkInterfaceFactory $productLinkInterfaceFactory,
+        Processor $galleryProcessor,
+        File $file,
+        DirectoryList $directoryList,
+        CategoryLinkManagementInterface $categoryLinkManagementInterface,
+        Category $categoryHelper,
+        Stock $stockFilter
     ) {
-        // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
+        $this->faker = Faker::create(Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->productInterfaceFactory = $productInterfaceFactory;
         $this->productRepositoryInterface = $productRepositoryInterface;
@@ -134,7 +151,7 @@ class Product extends AbstractHelper
      */
     public function createProduct(
         $websiteId = 1,
-        $typeId = \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE,
+        $typeId = ProductType::TYPE_SIMPLE,
         $applyImage = true
     ) {
         if (!in_array($typeId, $this->getTypeArray())) {
@@ -196,7 +213,7 @@ class Product extends AbstractHelper
      * @param $product
      * @return \Magento\Product\Model\Data\Product
      */
-    public function reloadProduct(\Magento\Catalog\Model\Product\Interceptor $product)
+    public function reloadProduct(Interceptor $product)
     {
         if ($product && $product->getId()) {
             try {
@@ -216,12 +233,12 @@ class Product extends AbstractHelper
     public function getTypeArray()
     {
         return [
-            \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE,
-            \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE,
-            \Magento\Catalog\Model\Product\Type::TYPE_VIRTUAL,
-            \Magento\Downloadable\Model\Product\Type::TYPE_DOWNLOADABLE,
-            \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE,
-            \Magento\GroupedProduct\Model\Product\Type\Grouped::TYPE_CODE,
+            ProductType::TYPE_SIMPLE,
+            ProductType::TYPE_BUNDLE,
+            ProductType::TYPE_VIRTUAL,
+            Downloadable::TYPE_DOWNLOADABLE,
+            Configurable::TYPE_CODE,
+            Grouped::TYPE_CODE,
         ];
     }
 
@@ -247,7 +264,7 @@ class Product extends AbstractHelper
      * @param int $limit
      * @return array
      */
-    public function createProductLinkArray(\Magento\Catalog\Model\Product\Interceptor $product, $limit = 1)
+    public function createProductLinkArray(Interceptor $product, $limit = 1)
     {
         $linkData = [];
         $linkSkus = $this->getRandomSku($limit);
@@ -314,7 +331,7 @@ class Product extends AbstractHelper
             ->setPageSize($limit);
 
         if ($simpleOnly) {
-            $collection->addAttributeToFilter('type_id', ['eq' => \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE]);
+            $collection->addAttributeToFilter('type_id', ['eq' => ProductType::TYPE_SIMPLE]);
         }
 
         if ($inStockOnly) {
@@ -332,7 +349,7 @@ class Product extends AbstractHelper
      * @param int $limit
      * @return void
      */
-    public function addImages(\Magento\Catalog\Model\Product\Interceptor $product, $limit = 1)
+    public function addImages(Interceptor $product, $limit = 1)
     {
         for ($generate = 1; $generate <= $limit; $generate++) {
             $imageUrl = self::PLACEHOLDER_SOURCE . 'image-' . str_pad(rand(1, 20), 3, 0, STR_PAD_LEFT) . '.jpg';
@@ -360,7 +377,6 @@ class Product extends AbstractHelper
         $this->file->cp($newFileName, $newFileName . '.jpg');
         if ($result) {
             try {
-                // $product->addImageToMediaGallery($newFileName . '.jpg', $imageType, true, $visible);
                 $this->galleryProcessor->addImage($product, $newFileName . '.jpg', $imageType, false, $visible);
             } catch (\Exception $e) {
                 $this->logger->critical($e);
@@ -376,7 +392,7 @@ class Product extends AbstractHelper
      */
     protected function getMediaDirTmpDir()
     {
-        return $this->directoryList->getPath(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA)
+        return $this->directoryList->getPath(DirectoryList::MEDIA)
             . DIRECTORY_SEPARATOR . 'xigen' . DIRECTORY_SEPARATOR;
     }
 

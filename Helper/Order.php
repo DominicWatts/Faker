@@ -2,9 +2,22 @@
 
 namespace Xigen\Faker\Helper;
 
+use Faker\Factory as Faker;
+use Magento\CatalogInventory\Api\StockStateInterface;
+use Magento\Customer\Model\AddressFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\DB\TransactionFactory;
 use Magento\Quote\Api\CartManagementInterface;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Convert\Order as ConvertOrder;
+use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Shipping\Model\ShipmentNotifier;
+use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Order helper
@@ -83,33 +96,32 @@ class Order extends AbstractHelper
 
     /**
      * Order constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param Customer $customerHelper
-     * @param Product $productHelper
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
-     * @param \Magento\Quote\Api\CartRepositoryInterface $cartRepositoryInterface
-     * @param \Magento\Customer\Model\AddressFactory $addressFactory
-     * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface
-     * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
-     * @param \Magento\Sales\Model\Convert\Order $convertOrder
-     * @param \Magento\CatalogInventory\Api\StockStateInterface $stockItem
+     * @param Context $context
+     * @param LoggerInterface $logger
+     * @param \Xigen\Faker\Helper\Customer $customerHelper
+     * @param \Xigen\Faker\Helper\Product $productHelper
+     * @param StoreManagerInterface $storeManagerInterface
+     * @param CartRepositoryInterface $cartRepositoryInterface
+     * @param AddressFactory $addressFactory
+     * @param OrderRepositoryInterface $orderRepositoryInterface
+     * @param TransactionFactory $transactionFactory
+     * @param ConvertOrder $convertOrder
+     * @param StockStateInterface $stockItem
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Psr\Log\LoggerInterface $logger,
-        \Xigen\Faker\Helper\Customer $customerHelper,
-        \Xigen\Faker\Helper\Product $productHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManagerInterface,
-        \Magento\Quote\Api\CartRepositoryInterface $cartRepositoryInterface,
-        \Magento\Customer\Model\AddressFactory $addressFactory,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface,
+        Context $context,
+        LoggerInterface $logger,
+        Customer $customerHelper,
+        Product $productHelper,
+        StoreManagerInterface $storeManagerInterface,
+        CartRepositoryInterface $cartRepositoryInterface,
+        AddressFactory $addressFactory,
+        OrderRepositoryInterface $orderRepositoryInterface,
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
-        \Magento\Sales\Model\Convert\Order $convertOrder,
-        \Magento\CatalogInventory\Api\StockStateInterface $stockItem
+        ConvertOrder $convertOrder,
+        StockStateInterface $stockItem
     ) {
-        // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
+        $this->faker = Faker::create(Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->customerHelper = $customerHelper;
         $this->productHelper = $productHelper;
@@ -125,22 +137,22 @@ class Order extends AbstractHelper
     }
 
     /**
-     * Create random product.
+     * Create random order
      * @param int $storeId
      * @return \Magento\Catalog\Model\Order\Interceptor
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function createOrder($storeId = 1)
     {
 
         // bypass Area code not set
-        $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->_objectManager = ObjectManager::getInstance();
         $this->cartManagementInterface = $this->_objectManager->create(CartManagementInterface::class);
 
         try {
             $store = $this->storeManagerInterface->getStore($storeId);
         } catch (\Exception $e) {
             $this->logger->critical($e);
-
             return;
         }
 
@@ -235,7 +247,7 @@ class Order extends AbstractHelper
                 return;
             }
 
-            $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $this->_objectManager = ObjectManager::getInstance();
             $this->invoiceService = $this->_objectManager->create(InvoiceService::class);
 
             $invoice = $this->invoiceService->prepareInvoice($order);
@@ -243,7 +255,7 @@ class Order extends AbstractHelper
                 return;
             }
 
-            $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
+            $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
             $invoice->register();
             $invoice->getOrder()->setCustomerNoteNotify(false);
             $invoice->getOrder()->setIsInProcess(true);
@@ -261,8 +273,9 @@ class Order extends AbstractHelper
 
     /**
      * Generate shipment from order ID.
-     * @param int $orderId
-     * @return void
+     * @param $orderId
+     * @param bool $doNotify
+     * @return bool|void
      */
     public function generateShipment($orderId, $doNotify = true)
     {
@@ -294,8 +307,8 @@ class Order extends AbstractHelper
             $orderShipment->getOrder()->save();
 
             if ($doNotify) {
-                $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                $this->_objectManager->create(\Magento\Shipping\Model\ShipmentNotifier::class)
+                $this->_objectManager = ObjectManager::getInstance();
+                $this->_objectManager->create(ShipmentNotifier::class)
                     ->notify($orderShipment);
                 $orderShipment->save();
             }
@@ -333,6 +346,7 @@ class Order extends AbstractHelper
      * @param int $limit
      * @param int $websiteId
      * @return \Magento\Catalog\Model\ResourceModel\Customer\Collection
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getRandomCustomerCollection($limit = 1, $websiteId = 1)
     {
@@ -367,11 +381,11 @@ class Order extends AbstractHelper
 
     /**
      * Get product by Id.
-     * @param int $productId
+     * @param $productId
      * @param bool $editMode
-     * @param int $storeId
+     * @param null $storeId
      * @param bool $forceReload
-     * @return \Magento\Catalog\Model\Data\Product
+     * @return bool|\Magento\Catalog\Model\Data\Product
      */
     public function getProductById($productId, $editMode = false, $storeId = null, $forceReload = false)
     {
@@ -380,8 +394,8 @@ class Order extends AbstractHelper
 
     /**
      * Get customer by Id.
-     * @param int $customerId
-     * @return \Magento\Catalog\Model\Data\Product
+     * @param $customerId
+     * @return bool|\Magento\Customer\Api\Data\CustomerInterface
      */
     public function getCustomerById($customerId)
     {
@@ -390,8 +404,8 @@ class Order extends AbstractHelper
 
     /**
      * Get order by Id.
-     * @param int $orderId
-     * @return \Magento\Sales\Model\Data\Order
+     * @param $orderId
+     * @return bool|\Magento\Sales\Api\Data\OrderInterface
      */
     public function getById($orderId)
     {
@@ -399,7 +413,6 @@ class Order extends AbstractHelper
             return $this->orderRepositoryInterface->get($orderId);
         } catch (\Exception $e) {
             $this->logger->critical($e);
-
             return false;
         }
     }

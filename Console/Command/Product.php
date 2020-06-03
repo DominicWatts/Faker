@@ -4,14 +4,19 @@ namespace Xigen\Faker\Console\Command;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Xigen\Faker\Helper\Product as ProductHelper;
 
 /**
  * Product Console
@@ -55,22 +60,30 @@ class Product extends Command
     protected $output;
 
     /**
+     * @var ProgressBarFactory
+     */
+    protected $progressBarFactory;
+
+    /**
      * Product constructor.
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\App\State $state
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \Xigen\Faker\Helper\Product $productHelper
+     * @param LoggerInterface $logger
+     * @param State $state
+     * @param DateTime $dateTime
+     * @param ProductHelper $productHelper
+     * @param ProgressBarFactory $progressBarFactory
      */
     public function __construct(
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Xigen\Faker\Helper\Product $productHelper
+        LoggerInterface $logger,
+        State $state,
+        DateTime $dateTime,
+        ProductHelper $productHelper,
+        ProgressBarFactory $progressBarFactory
     ) {
         $this->logger = $logger;
         $this->state = $state;
         $this->dateTime = $dateTime;
         $this->productHelper = $productHelper;
+        $this->progressBarFactory = $progressBarFactory;
         parent::__construct();
     }
 
@@ -107,15 +120,30 @@ class Product extends Command
 
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
-            $progress = new ProgressBar($this->output, $limit);
-            $progress->start();
+            /** @var ProgressBar $progress */
+            $progress = $this->progressBarFactory->create(
+                [
+                    'output' => $this->output,
+                    'max' => $limit
+                ]
+            );
+
+            $progress->setFormat(
+                "%current%/%max% [%bar%] %percent:3s%% %elapsed% %memory:6s% \t| <info>%message%</info>"
+            );
+
+            if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
+                $progress->setOverwrite(false);
+            }
 
             for ($generate = 1; $generate <= $limit; $generate++) {
-                $product = $this->productHelper->createProduct(
+                if ($product = $this->productHelper->createProduct(
                     $websiteId,
                     Type::TYPE_SIMPLE,
                     $image
-                );
+                )) {
+                    $progress->setMessage((string) __('Product: %1', $product->getSku()));
+                }
                 $progress->advance();
             }
 
