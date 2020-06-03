@@ -2,14 +2,20 @@
 
 namespace Xigen\Faker\Console\Command;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Xigen\Faker\Helper\Order as OrderHelper;
 
 /**
  * Order console
@@ -51,22 +57,30 @@ class Order extends Command
     protected $output;
 
     /**
+     * @var ProgressBarFactory
+     */
+    protected $progressBarFactory;
+
+    /**
      * Order constructor.
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\App\State $state
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \Xigen\Faker\Helper\Order $orderHelper
+     * @param LoggerInterface $logger
+     * @param State $state
+     * @param DateTime $dateTime
+     * @param OrderHelper $orderHelper
+     * @param ProgressBarFactory $progressBarFactory
      */
     public function __construct(
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Xigen\Faker\Helper\Order $orderHelper
+        LoggerInterface $logger,
+        State $state,
+        DateTime $dateTime,
+        OrderHelper $orderHelper,
+        ProgressBarFactory $progressBarFactory
     ) {
         $this->logger = $logger;
         $this->state = $state;
         $this->dateTime = $dateTime;
         $this->orderHelper = $orderHelper;
+        $this->progressBarFactory = $progressBarFactory;
         parent::__construct();
     }
 
@@ -79,7 +93,7 @@ class Order extends Command
     ) {
         $this->input = $input;
         $this->output = $output;
-        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_FRONTEND);
+        $this->state->setAreaCode(Area::AREA_FRONTEND);
 
         $generate = $input->getArgument(self::GENERATE_ARGUMENT) ?: false;
         $storeId = $this->input->getOption(self::STORE_OPTION) ?: 1;
@@ -98,11 +112,26 @@ class Order extends Command
 
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
-            $progress = new ProgressBar($this->output, $limit);
-            $progress->start();
+            /** @var ProgressBar $progress */
+            $progress = $this->progressBarFactory->create(
+                [
+                    'output' => $this->output,
+                    'max' => $limit
+                ]
+            );
+
+            $progress->setFormat(
+                "%current%/%max% [%bar%] %percent:3s%% %elapsed% %memory:6s% \t| <info>%message%</info>"
+            );
+
+            if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
+                $progress->setOverwrite(false);
+            }
 
             for ($generate = 1; $generate <= $limit; $generate++) {
-                $order = $this->orderHelper->createOrder($storeId);
+                if ($order = $this->orderHelper->createOrder($storeId)) {
+                    $progress->setMessage((string) __('Order: %1', $order));
+                }
                 $progress->advance();
             }
 

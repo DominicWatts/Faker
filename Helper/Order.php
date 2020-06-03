@@ -2,9 +2,22 @@
 
 namespace Xigen\Faker\Helper;
 
+use Faker\Factory as Faker;
+use Magento\CatalogInventory\Api\StockStateInterface;
+use Magento\Customer\Model\AddressFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\DB\TransactionFactory;
 use Magento\Quote\Api\CartManagementInterface;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Convert\Order as ConvertOrder;
+use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Shipping\Model\ShipmentNotifier;
+use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Order helper
@@ -83,33 +96,32 @@ class Order extends AbstractHelper
 
     /**
      * Order constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param Customer $customerHelper
-     * @param Product $productHelper
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
-     * @param \Magento\Quote\Api\CartRepositoryInterface $cartRepositoryInterface
-     * @param \Magento\Customer\Model\AddressFactory $addressFactory
-     * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface
-     * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
-     * @param \Magento\Sales\Model\Convert\Order $convertOrder
-     * @param \Magento\CatalogInventory\Api\StockStateInterface $stockItem
+     * @param Context $context
+     * @param LoggerInterface $logger
+     * @param \Xigen\Faker\Helper\Customer $customerHelper
+     * @param \Xigen\Faker\Helper\Product $productHelper
+     * @param StoreManagerInterface $storeManagerInterface
+     * @param CartRepositoryInterface $cartRepositoryInterface
+     * @param AddressFactory $addressFactory
+     * @param OrderRepositoryInterface $orderRepositoryInterface
+     * @param TransactionFactory $transactionFactory
+     * @param ConvertOrder $convertOrder
+     * @param StockStateInterface $stockItem
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Psr\Log\LoggerInterface $logger,
-        \Xigen\Faker\Helper\Customer $customerHelper,
-        \Xigen\Faker\Helper\Product $productHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManagerInterface,
-        \Magento\Quote\Api\CartRepositoryInterface $cartRepositoryInterface,
-        \Magento\Customer\Model\AddressFactory $addressFactory,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepositoryInterface,
+        Context $context,
+        LoggerInterface $logger,
+        Customer $customerHelper,
+        Product $productHelper,
+        StoreManagerInterface $storeManagerInterface,
+        CartRepositoryInterface $cartRepositoryInterface,
+        AddressFactory $addressFactory,
+        OrderRepositoryInterface $orderRepositoryInterface,
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
-        \Magento\Sales\Model\Convert\Order $convertOrder,
-        \Magento\CatalogInventory\Api\StockStateInterface $stockItem
+        ConvertOrder $convertOrder,
+        StockStateInterface $stockItem
     ) {
-        // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
+        $this->faker = Faker::create(Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->customerHelper = $customerHelper;
         $this->productHelper = $productHelper;
@@ -125,91 +137,81 @@ class Order extends AbstractHelper
     }
 
     /**
-     * Create random product.
+     * Create random order
      * @param int $storeId
      * @return \Magento\Catalog\Model\Order\Interceptor
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function createOrder($storeId = 1)
     {
 
         // bypass Area code not set
-        $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->_objectManager = ObjectManager::getInstance();
         $this->cartManagementInterface = $this->_objectManager->create(CartManagementInterface::class);
 
         try {
             $store = $this->storeManagerInterface->getStore($storeId);
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
+            
+            $websiteId = $store->getWebsiteId();
+            $customerIds = $this->getRandomCustomerId($websiteId);
+            if (empty($customerIds)) {
+                new \Exception(__('Please add some customers for this store first'));
+            }
 
-            return;
-        }
+            $customer = $this->getCustomerById($customerIds[0]);
+            if (!$customer) {
+                new \Exception(__('Problem loading customer'));
+            }
 
-        $websiteId = $store->getWebsiteId();
-        $customerIds = $this->getRandomCustomerId($websiteId);
-        if (empty($customerIds)) {
-            new \Exception(__('Please add some customers for this store first'));
-        }
+            $cartId = $this->cartManagementInterface->createEmptyCart(); //Create empty cart
+            $quote = $this->cartRepositoryInterface->get($cartId); // load empty cart quote
+            $quote->setStore($store);
+            $quote->setCurrency();
+            $quote->assignCustomer($customer);
 
-        $customer = $this->getCustomerById($customerIds[0]);
-        if (!$customer) {
-            new \Exception(__('Problem loading customer'));
-        }
+            $limit = rand(1, 10);
+            $productIds = $this->getRandomProductId($limit, true);
 
-        $cartId = $this->cartManagementInterface->createEmptyCart(); //Create empty cart
-        $quote = $this->cartRepositoryInterface->get($cartId); // load empty cart quote
-        $quote->setStore($store);
-        $quote->setCurrency();
-        $quote->assignCustomer($customer);
+            if (empty($productIds)) {
+                new \Exception(__('Please add some produts for this store first'));
+            }
 
-        $productIds = $this->getRandomProductId(rand(1, 10), true);
-
-        if (empty($productIds)) {
-            new \Exception(__('Please add some produts for this store first'));
-        }
-
-        foreach ($productIds as $productId) {
-            try {
+            $added = 0;
+            foreach ($productIds as $productId) {
+                
                 $product = $this->getProductById($productId);
                 if ($product->isSalable()) {
                     $qty = $this->stockItem->getStockQty($product->getId(), $websiteId);
-                    if ($qty > 1) {
+                    if ($qty > 1 && $added < $limit) {
                         $product->setStore($store);
                         $product->setPrice($this->faker->randomFloat(4, 0, 100));
                         $quote->addProduct($product, (int) (rand(1, 2)));
+                        $added++;
                     }
                 }
-            } catch (\Exception $e) {
-                $this->logger->critical($e);
             }
-        }
 
-        $billingAddress = $this->addressFactory->create()->load($customer->getDefaultBilling());
-        $shippingAddress = $this->addressFactory->create()->load($customer->getDefaultShipping());
+            $billingAddress = $this->addressFactory->create()->load($customer->getDefaultBilling());
+            $shippingAddress = $this->addressFactory->create()->load($customer->getDefaultShipping());
 
-        $quote->getBillingAddress()->addData($billingAddress->getData());
-        $quote->getShippingAddress()->addData($shippingAddress->getData());
+            $quote->getBillingAddress()->addData($billingAddress->getData());
+            $quote->getShippingAddress()->addData($shippingAddress->getData());
 
-        $shippingAddress = $quote->getShippingAddress();
-        $shippingAddress->setCollectShippingRates(true)
-            ->collectShippingRates()
-            ->setShippingMethod('flatrate_flatrate');
+            $shippingAddress = $quote->getShippingAddress();
+            $shippingAddress->setCollectShippingRates(true)
+                ->collectShippingRates()
+                ->setShippingMethod('flatrate_flatrate');
 
-        $quote->setPaymentMethod('checkmo');
-        $quote->setInventoryProcessed(false);
+            $quote->setPaymentMethod('checkmo');
+            $quote->setInventoryProcessed(false);
 
-        $quote->getPayment()->importData(['method' => 'checkmo']);
+            $quote->getPayment()->importData(['method' => 'checkmo']);
 
-        try {
             $this->cartRepositoryInterface->save($quote);
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
-            return;
-        }
 
-        $quote->collectTotals();
-        $quote = $this->cartRepositoryInterface->get($quote->getId());
-
-        try {
+            $quote->collectTotals();
+            $quote = $this->cartRepositoryInterface->get($quote->getId());
+      
             $orderId = $this->cartManagementInterface->placeOrder($quote->getId());
             $this->generateInvoice($orderId);
             if ($this->getRandomTrueOrFalse()) {
@@ -217,8 +219,10 @@ class Order extends AbstractHelper
             }
 
             return $orderId;
+
         } catch (\Exception $e) {
             $this->logger->critical($e);
+            return $e->getMessage();
         }
     }
 
@@ -229,40 +233,37 @@ class Order extends AbstractHelper
      */
     public function generateInvoice($orderId)
     {
-        try {
-            $order = $this->getById($orderId);
-            if (!$order || !$order->getId() || !$order->canInvoice()) {
-                return;
-            }
-
-            $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $this->invoiceService = $this->_objectManager->create(InvoiceService::class);
-
-            $invoice = $this->invoiceService->prepareInvoice($order);
-            if (!$invoice || !$invoice->getTotalQty()) {
-                return;
-            }
-
-            $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
-            $invoice->register();
-            $invoice->getOrder()->setCustomerNoteNotify(false);
-            $invoice->getOrder()->setIsInProcess(true);
-            $order->addStatusHistoryComment('Automatically INVOICED', false);
-            $transactionSave = $this->transactionFactory
-                ->create()
-                ->addObject($invoice)
-                ->addObject($invoice->getOrder());
-
-            $transactionSave->save();
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
+        $order = $this->getById($orderId);
+        if (!$order || !$order->getId() || !$order->canInvoice()) {
+            return;
         }
+
+        $this->_objectManager = ObjectManager::getInstance();
+        $this->invoiceService = $this->_objectManager->create(InvoiceService::class);
+
+        $invoice = $this->invoiceService->prepareInvoice($order);
+        if (!$invoice || !$invoice->getTotalQty()) {
+            return;
+        }
+
+        $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
+        $invoice->register();
+        $invoice->getOrder()->setCustomerNoteNotify(false);
+        $invoice->getOrder()->setIsInProcess(true);
+        $order->addStatusHistoryComment('Automatically INVOICED', false);
+        $transactionSave = $this->transactionFactory
+            ->create()
+            ->addObject($invoice)
+            ->addObject($invoice->getOrder());
+
+        $transactionSave->save();
     }
 
     /**
      * Generate shipment from order ID.
-     * @param int $orderId
-     * @return void
+     * @param $orderId
+     * @param bool $doNotify
+     * @return bool|void
      */
     public function generateShipment($orderId, $doNotify = true)
     {
@@ -271,41 +272,37 @@ class Order extends AbstractHelper
         if (!$order || !$order->canShip()) {
             return;
         }
+    
+        $orderShipment = $this->convertOrder->toShipment($order);
 
-        try {
-            $orderShipment = $this->convertOrder->toShipment($order);
-
-            foreach ($order->getAllItems() as $orderItem) {
-                if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
-                    continue;
-                }
-                $shipmentItem = $this->convertOrder
-                    ->itemToShipmentItem($orderItem)
-                    ->setQty($orderItem->getQtyToShip());
-
-                $orderShipment->addItem($shipmentItem);
+        foreach ($order->getAllItems() as $orderItem) {
+            if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
+                continue;
             }
+            $shipmentItem = $this->convertOrder
+                ->itemToShipmentItem($orderItem)
+                ->setQty($orderItem->getQtyToShip());
 
-            $orderShipment->register();
-            $orderShipment->getOrder()->setIsInProcess(true);
-
-            // Save created Order Shipment
-            $orderShipment->save();
-            $orderShipment->getOrder()->save();
-
-            if ($doNotify) {
-                $this->_objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                $this->_objectManager->create(\Magento\Shipping\Model\ShipmentNotifier::class)
-                    ->notify($orderShipment);
-                $orderShipment->save();
-            }
-            $order->addStatusToHistory($order->getStatus(), 'Order has been marked as complete');
-            $order->save();
-
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $orderShipment->addItem($shipmentItem);
         }
+
+        $orderShipment->register();
+        $orderShipment->getOrder()->setIsInProcess(true);
+
+        // Save created Order Shipment
+        $orderShipment->save();
+        $orderShipment->getOrder()->save();
+
+        if ($doNotify) {
+            $this->_objectManager = ObjectManager::getInstance();
+            $this->_objectManager->create(ShipmentNotifier::class)
+                ->notify($orderShipment);
+            $orderShipment->save();
+        }
+        $order->addStatusToHistory($order->getStatus(), 'Order has been marked as complete');
+        $order->save();
+
+        return true;
     }
 
     /**
@@ -333,6 +330,7 @@ class Order extends AbstractHelper
      * @param int $limit
      * @param int $websiteId
      * @return \Magento\Catalog\Model\ResourceModel\Customer\Collection
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getRandomCustomerCollection($limit = 1, $websiteId = 1)
     {
@@ -367,11 +365,11 @@ class Order extends AbstractHelper
 
     /**
      * Get product by Id.
-     * @param int $productId
+     * @param $productId
      * @param bool $editMode
-     * @param int $storeId
+     * @param null $storeId
      * @param bool $forceReload
-     * @return \Magento\Catalog\Model\Data\Product
+     * @return bool|\Magento\Catalog\Model\Data\Product
      */
     public function getProductById($productId, $editMode = false, $storeId = null, $forceReload = false)
     {
@@ -380,8 +378,8 @@ class Order extends AbstractHelper
 
     /**
      * Get customer by Id.
-     * @param int $customerId
-     * @return \Magento\Catalog\Model\Data\Product
+     * @param $customerId
+     * @return bool|\Magento\Customer\Api\Data\CustomerInterface
      */
     public function getCustomerById($customerId)
     {
@@ -390,17 +388,11 @@ class Order extends AbstractHelper
 
     /**
      * Get order by Id.
-     * @param int $orderId
-     * @return \Magento\Sales\Model\Data\Order
+     * @param $orderId
+     * @return bool|\Magento\Sales\Api\Data\OrderInterface
      */
     public function getById($orderId)
     {
-        try {
-            return $this->orderRepositoryInterface->get($orderId);
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
-
-            return false;
-        }
+        return $this->orderRepositoryInterface->get($orderId);
     }
 }

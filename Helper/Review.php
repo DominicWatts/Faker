@@ -2,7 +2,13 @@
 
 namespace Xigen\Faker\Helper;
 
+use Faker\Factory as Faker;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Review\Model\ResourceModel\Review\CollectionFactory;
+use Magento\Review\Model\ReviewFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Review helper
@@ -46,25 +52,24 @@ class Review extends AbstractHelper
 
     /**
      * Review constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Review\Model\ResourceModel\Review\CollectionFactory $reviewCollectionFactory
-     * @param \Magento\Review\Model\ReviewFactory $reviewFactory
-     * @param Customer $customerHelper
-     * @param Product $productHelper
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
+     * @param Context $context
+     * @param LoggerInterface $logger
+     * @param CollectionFactory $reviewCollectionFactory
+     * @param ReviewFactory $reviewFactory
+     * @param \Xigen\Faker\Helper\Customer $customerHelper
+     * @param \Xigen\Faker\Helper\Product $productHelper
+     * @param StoreManagerInterface $storeManagerInterface
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Review\Model\ResourceModel\Review\CollectionFactory $reviewCollectionFactory,
-        \Magento\Review\Model\ReviewFactory $reviewFactory,
-        \Xigen\Faker\Helper\Customer $customerHelper,
-        \Xigen\Faker\Helper\Product $productHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
+        Context $context,
+        LoggerInterface $logger,
+        CollectionFactory $reviewCollectionFactory,
+        ReviewFactory $reviewFactory,
+        Customer $customerHelper,
+        Product $productHelper,
+        StoreManagerInterface $storeManagerInterface
     ) {
-        // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
+        $this->faker = Faker::create(Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->reviewCollectionFactory = $reviewCollectionFactory;
         $this->reviewFactory = $reviewFactory;
@@ -77,7 +82,7 @@ class Review extends AbstractHelper
     /**
      * Create random review.
      * @param int $storeId
-     * @return \Magento\Review\Model\Data\Review
+     * @return mixed
      */
     public function createReview($storeId = 1)
     {

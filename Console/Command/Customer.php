@@ -2,14 +2,20 @@
 
 namespace Xigen\Faker\Console\Command;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Xigen\Faker\Helper\Customer as CustomerHelper;
 
 /**
  * Customer Console
@@ -49,23 +55,31 @@ class Customer extends Command
      * @var OutputInterface
      */
     protected $output;
+
+    /**
+     * @var ProgressBarFactory
+     */
+    protected $progressBarFactory;
+
     /**
      * Customer constructor.
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\App\State $state
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \Xigen\Faker\Helper\Customer $customerHelper
+     * @param LoggerInterface $logger
+     * @param State $state
+     * @param DateTime $dateTime
+     * @param CustomerHelper $customerHelper
      */
     public function __construct(
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Xigen\Faker\Helper\Customer $customerHelper
+        LoggerInterface $logger,
+        State $state,
+        DateTime $dateTime,
+        CustomerHelper $customerHelper,
+        ProgressBarFactory $progressBarFactory
     ) {
         $this->logger = $logger;
         $this->state = $state;
         $this->dateTime = $dateTime;
         $this->customerHelper = $customerHelper;
+        $this->progressBarFactory = $progressBarFactory;
         parent::__construct();
     }
 
@@ -78,7 +92,7 @@ class Customer extends Command
     ) {
         $this->input = $input;
         $this->output = $output;
-        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
+        $this->state->setAreaCode(Area::AREA_GLOBAL);
 
         $generate = $input->getArgument(self::GENERATE_ARGUMENT) ?: false;
         $websiteId = $this->input->getOption(self::WEBSITE_OPTION) ?: 1;
@@ -96,13 +110,32 @@ class Customer extends Command
             }
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Start');
 
-            $progress = new ProgressBar($this->output, $limit);
-            $progress->start();
+            /** @var ProgressBar $progress */
+            $progress = $this->progressBarFactory->create(
+                [
+                    'output' => $this->output,
+                    'max' => $limit
+                ]
+            );
+
+            $progress->setFormat(
+                "%current%/%max% [%bar%] %percent:3s%% %elapsed% %memory:6s% \t| <info>%message%</info>"
+            );
+
+            if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
+                $progress->setOverwrite(false);
+            }
 
             for ($generate = 1; $generate <= $limit; $generate++) {
-                $customer = $this->customerHelper->createCustomer($websiteId);
-                $address = $this->customerHelper->createCustomerAddress($customer);
-                $progress->advance();
+                if ($customer = $this->customerHelper->createCustomer($websiteId)) {
+                    $address = $this->customerHelper->createCustomerAddress($customer);
+                    $progress->setMessage((string) __(
+                        'Customer: %1 %2',
+                        $customer->getFirstname(),
+                        $customer->getLastname()
+                    ));
+                    $progress->advance();
+                }
             }
 
             $progress->finish();

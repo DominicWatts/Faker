@@ -2,7 +2,17 @@
 
 namespace Xigen\Faker\Helper;
 
+use Faker\Factory as Faker;
+use Magento\Customer\Api\AddressRepositoryInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Api\Data\AddressInterfaceFactory;
+use Magento\Customer\Api\Data\CustomerInterfaceFactory;
+use Magento\Customer\Api\Data\RegionInterface;
+use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Customer helper
@@ -56,26 +66,26 @@ class Customer extends AbstractHelper
 
     /**
      * Customer constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Customer\Api\Data\CustomerInterfaceFactory $customerInterfaceFactory
-     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface
-     * @param \Magento\Customer\Api\Data\AddressInterfaceFactory $addressInterfaceFactory
-     * @param \Magento\Customer\Api\AddressRepositoryInterface $addressRepositoryInterface
-     * @param \Magento\Customer\Api\Data\RegionInterface $regionInterface
-     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptorInterface
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Customer\Model\ResourceModel\Customer\CollectionFactory $customerCollectionFactory
+     * @param Context $context
+     * @param CustomerInterfaceFactory $customerInterfaceFactory
+     * @param CustomerRepositoryInterface $customerRepositoryInterface
+     * @param AddressInterfaceFactory $addressInterfaceFactory
+     * @param AddressRepositoryInterface $addressRepositoryInterface
+     * @param RegionInterface $regionInterface
+     * @param EncryptorInterface $encryptorInterface
+     * @param LoggerInterface $logger
+     * @param CollectionFactory $customerCollectionFactory
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Customer\Api\Data\CustomerInterfaceFactory $customerInterfaceFactory,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
-        \Magento\Customer\Api\Data\AddressInterfaceFactory $addressInterfaceFactory,
-        \Magento\Customer\Api\AddressRepositoryInterface $addressRepositoryInterface,
-        \Magento\Customer\Api\Data\RegionInterface $regionInterface,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptorInterface,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Customer\Model\ResourceModel\Customer\CollectionFactory $customerCollectionFactory
+        Context $context,
+        CustomerInterfaceFactory $customerInterfaceFactory,
+        CustomerRepositoryInterface $customerRepositoryInterface,
+        AddressInterfaceFactory $addressInterfaceFactory,
+        AddressRepositoryInterface $addressRepositoryInterface,
+        RegionInterface $regionInterface,
+        EncryptorInterface $encryptorInterface,
+        LoggerInterface $logger,
+        CollectionFactory $customerCollectionFactory
     ) {
         $this->customerInterfaceFactory = $customerInterfaceFactory;
         $this->customerRepositoryInterface = $customerRepositoryInterface;
@@ -83,17 +93,16 @@ class Customer extends AbstractHelper
         $this->addressRepositoryInterface = $addressRepositoryInterface;
         $this->regionInterface = $regionInterface;
         $this->encryptorInterface = $encryptorInterface;
-        // https://packagist.org/packages/fzaninotto/faker
-        $this->faker = \Faker\Factory::create(\Xigen\Faker\Helper\Data::LOCALE_CODE);
+        $this->faker = Faker::create(Data::LOCALE_CODE);
         $this->logger = $logger;
         $this->customerCollectionFactory = $customerCollectionFactory;
         parent::__construct($context);
     }
 
     /**
-     * Create random customer.
+     * Create random customer
      * @param int $websiteId
-     * @return \Magento\Customer\Model\Data\Customer
+     * @return \Magento\Customer\Api\Data\CustomerInterface
      */
     public function createCustomer($websiteId = 1)
     {
@@ -117,7 +126,7 @@ class Customer extends AbstractHelper
     /**
      * Create address for supplied customerId.
      * @param \Magento\Customer\Model\Data\Customer $customer
-     * @return \Magento\Customer\Model\Address
+     * @return \Magento\Customer\Api\Data\AddressInterface
      */
     public function createCustomerAddress(\Magento\Customer\Model\Data\Customer $customer)
     {
@@ -140,7 +149,6 @@ class Customer extends AbstractHelper
 
             try {
                 $address = $this->addressRepositoryInterface->save($address);
-
                 return $address;
             } catch (\Exception $e) {
                 $this->logger->critical($e);
@@ -170,6 +178,7 @@ class Customer extends AbstractHelper
      * @param int $limit
      * @param int $websiteId
      * @return \Magento\Catalog\Model\ResourceModel\Customer\Collection
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getRandomCustomer($limit = 1, $websiteId = 1)
     {
@@ -190,7 +199,7 @@ class Customer extends AbstractHelper
     /**
      * Get customer by Id.
      * @param int $customerId
-     * @return \Magento\Customer\Model\Data\Customer
+     * @return bool|\Magento\Customer\Api\Data\CustomerInterface
      */
     public function getById($customerId)
     {
@@ -198,7 +207,6 @@ class Customer extends AbstractHelper
             return $this->customerRepositoryInterface->getById($customerId);
         } catch (\Exception $e) {
             $this->logger->critical($e);
-
             return false;
         }
     }
