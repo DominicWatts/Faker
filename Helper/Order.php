@@ -151,7 +151,7 @@ class Order extends AbstractHelper
 
         try {
             $store = $this->storeManagerInterface->getStore($storeId);
-
+            
             $websiteId = $store->getWebsiteId();
             $customerIds = $this->getRandomCustomerId($websiteId);
             if (empty($customerIds)) {
@@ -169,21 +169,24 @@ class Order extends AbstractHelper
             $quote->setCurrency();
             $quote->assignCustomer($customer);
 
-            $productIds = $this->getRandomProductId(rand(1, 10), true);
+            $limit = rand(1, 10);
+            $productIds = $this->getRandomProductId($limit, true);
 
             if (empty($productIds)) {
                 new \Exception(__('Please add some produts for this store first'));
             }
 
+            $added = 0;
             foreach ($productIds as $productId) {
                 
                 $product = $this->getProductById($productId);
                 if ($product->isSalable()) {
                     $qty = $this->stockItem->getStockQty($product->getId(), $websiteId);
-                    if ($qty > 1) {
+                    if ($qty > 1 && $added < $limit) {
                         $product->setStore($store);
                         $product->setPrice($this->faker->randomFloat(4, 0, 100));
                         $quote->addProduct($product, (int) (rand(1, 2)));
+                        $added++;
                     }
                 }
             }

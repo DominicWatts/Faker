@@ -314,7 +314,13 @@ class Product extends AbstractHelper
      */
     public function getRandomIds($limit = 1, $inStockOnly = false, $simpleOnly = true)
     {
-        return $this->getRandomProduct($limit, $inStockOnly, $simpleOnly, [])->getAllIds();
+        $products = $this->getRandomProduct($limit, $inStockOnly, $simpleOnly, ['entity_id']);
+        $ids = [];
+        foreach ($products as $product) {
+            $ids[] = $product->getId();
+        }
+
+        return $ids;
     }
 
     /**
@@ -328,7 +334,8 @@ class Product extends AbstractHelper
         $collection = $this->productCollectionFactory
             ->create()
             ->addAttributeToSelect(empty($attributes) ? '*' : $attributes)
-            ->setPageSize($limit);
+            ->setPageSize($limit)
+            ->setCurPage(1);
 
         if ($simpleOnly) {
             $collection->addAttributeToFilter('type_id', ['eq' => ProductType::TYPE_SIMPLE]);
