@@ -151,36 +151,32 @@ class Order extends AbstractHelper
 
         try {
             $store = $this->storeManagerInterface->getStore($storeId);
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
-            return;
-        }
 
-        $websiteId = $store->getWebsiteId();
-        $customerIds = $this->getRandomCustomerId($websiteId);
-        if (empty($customerIds)) {
-            new \Exception(__('Please add some customers for this store first'));
-        }
+            $websiteId = $store->getWebsiteId();
+            $customerIds = $this->getRandomCustomerId($websiteId);
+            if (empty($customerIds)) {
+                new \Exception(__('Please add some customers for this store first'));
+            }
 
-        $customer = $this->getCustomerById($customerIds[0]);
-        if (!$customer) {
-            new \Exception(__('Problem loading customer'));
-        }
+            $customer = $this->getCustomerById($customerIds[0]);
+            if (!$customer) {
+                new \Exception(__('Problem loading customer'));
+            }
 
-        $cartId = $this->cartManagementInterface->createEmptyCart(); //Create empty cart
-        $quote = $this->cartRepositoryInterface->get($cartId); // load empty cart quote
-        $quote->setStore($store);
-        $quote->setCurrency();
-        $quote->assignCustomer($customer);
+            $cartId = $this->cartManagementInterface->createEmptyCart(); //Create empty cart
+            $quote = $this->cartRepositoryInterface->get($cartId); // load empty cart quote
+            $quote->setStore($store);
+            $quote->setCurrency();
+            $quote->assignCustomer($customer);
 
-        $productIds = $this->getRandomProductId(rand(1, 10), true);
+            $productIds = $this->getRandomProductId(rand(1, 10), true);
 
-        if (empty($productIds)) {
-            new \Exception(__('Please add some produts for this store first'));
-        }
+            if (empty($productIds)) {
+                new \Exception(__('Please add some produts for this store first'));
+            }
 
-        foreach ($productIds as $productId) {
-            try {
+            foreach ($productIds as $productId) {
+                
                 $product = $this->getProductById($productId);
                 if ($product->isSalable()) {
                     $qty = $this->stockItem->getStockQty($product->getId(), $websiteId);
@@ -190,38 +186,29 @@ class Order extends AbstractHelper
                         $quote->addProduct($product, (int) (rand(1, 2)));
                     }
                 }
-            } catch (\Exception $e) {
-                $this->logger->critical($e);
             }
-        }
 
-        $billingAddress = $this->addressFactory->create()->load($customer->getDefaultBilling());
-        $shippingAddress = $this->addressFactory->create()->load($customer->getDefaultShipping());
+            $billingAddress = $this->addressFactory->create()->load($customer->getDefaultBilling());
+            $shippingAddress = $this->addressFactory->create()->load($customer->getDefaultShipping());
 
-        $quote->getBillingAddress()->addData($billingAddress->getData());
-        $quote->getShippingAddress()->addData($shippingAddress->getData());
+            $quote->getBillingAddress()->addData($billingAddress->getData());
+            $quote->getShippingAddress()->addData($shippingAddress->getData());
 
-        $shippingAddress = $quote->getShippingAddress();
-        $shippingAddress->setCollectShippingRates(true)
-            ->collectShippingRates()
-            ->setShippingMethod('flatrate_flatrate');
+            $shippingAddress = $quote->getShippingAddress();
+            $shippingAddress->setCollectShippingRates(true)
+                ->collectShippingRates()
+                ->setShippingMethod('flatrate_flatrate');
 
-        $quote->setPaymentMethod('checkmo');
-        $quote->setInventoryProcessed(false);
+            $quote->setPaymentMethod('checkmo');
+            $quote->setInventoryProcessed(false);
 
-        $quote->getPayment()->importData(['method' => 'checkmo']);
+            $quote->getPayment()->importData(['method' => 'checkmo']);
 
-        try {
             $this->cartRepositoryInterface->save($quote);
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
-            return;
-        }
 
-        $quote->collectTotals();
-        $quote = $this->cartRepositoryInterface->get($quote->getId());
-
-        try {
+            $quote->collectTotals();
+            $quote = $this->cartRepositoryInterface->get($quote->getId());
+      
             $orderId = $this->cartManagementInterface->placeOrder($quote->getId());
             $this->generateInvoice($orderId);
             if ($this->getRandomTrueOrFalse()) {
@@ -229,8 +216,10 @@ class Order extends AbstractHelper
             }
 
             return $orderId;
+
         } catch (\Exception $e) {
             $this->logger->critical($e);
+            return $e->getMessage();
         }
     }
 
@@ -241,34 +230,30 @@ class Order extends AbstractHelper
      */
     public function generateInvoice($orderId)
     {
-        try {
-            $order = $this->getById($orderId);
-            if (!$order || !$order->getId() || !$order->canInvoice()) {
-                return;
-            }
-
-            $this->_objectManager = ObjectManager::getInstance();
-            $this->invoiceService = $this->_objectManager->create(InvoiceService::class);
-
-            $invoice = $this->invoiceService->prepareInvoice($order);
-            if (!$invoice || !$invoice->getTotalQty()) {
-                return;
-            }
-
-            $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
-            $invoice->register();
-            $invoice->getOrder()->setCustomerNoteNotify(false);
-            $invoice->getOrder()->setIsInProcess(true);
-            $order->addStatusHistoryComment('Automatically INVOICED', false);
-            $transactionSave = $this->transactionFactory
-                ->create()
-                ->addObject($invoice)
-                ->addObject($invoice->getOrder());
-
-            $transactionSave->save();
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
+        $order = $this->getById($orderId);
+        if (!$order || !$order->getId() || !$order->canInvoice()) {
+            return;
         }
+
+        $this->_objectManager = ObjectManager::getInstance();
+        $this->invoiceService = $this->_objectManager->create(InvoiceService::class);
+
+        $invoice = $this->invoiceService->prepareInvoice($order);
+        if (!$invoice || !$invoice->getTotalQty()) {
+            return;
+        }
+
+        $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
+        $invoice->register();
+        $invoice->getOrder()->setCustomerNoteNotify(false);
+        $invoice->getOrder()->setIsInProcess(true);
+        $order->addStatusHistoryComment('Automatically INVOICED', false);
+        $transactionSave = $this->transactionFactory
+            ->create()
+            ->addObject($invoice)
+            ->addObject($invoice->getOrder());
+
+        $transactionSave->save();
     }
 
     /**
@@ -284,41 +269,37 @@ class Order extends AbstractHelper
         if (!$order || !$order->canShip()) {
             return;
         }
+    
+        $orderShipment = $this->convertOrder->toShipment($order);
 
-        try {
-            $orderShipment = $this->convertOrder->toShipment($order);
-
-            foreach ($order->getAllItems() as $orderItem) {
-                if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
-                    continue;
-                }
-                $shipmentItem = $this->convertOrder
-                    ->itemToShipmentItem($orderItem)
-                    ->setQty($orderItem->getQtyToShip());
-
-                $orderShipment->addItem($shipmentItem);
+        foreach ($order->getAllItems() as $orderItem) {
+            if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
+                continue;
             }
+            $shipmentItem = $this->convertOrder
+                ->itemToShipmentItem($orderItem)
+                ->setQty($orderItem->getQtyToShip());
 
-            $orderShipment->register();
-            $orderShipment->getOrder()->setIsInProcess(true);
-
-            // Save created Order Shipment
-            $orderShipment->save();
-            $orderShipment->getOrder()->save();
-
-            if ($doNotify) {
-                $this->_objectManager = ObjectManager::getInstance();
-                $this->_objectManager->create(ShipmentNotifier::class)
-                    ->notify($orderShipment);
-                $orderShipment->save();
-            }
-            $order->addStatusToHistory($order->getStatus(), 'Order has been marked as complete');
-            $order->save();
-
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $orderShipment->addItem($shipmentItem);
         }
+
+        $orderShipment->register();
+        $orderShipment->getOrder()->setIsInProcess(true);
+
+        // Save created Order Shipment
+        $orderShipment->save();
+        $orderShipment->getOrder()->save();
+
+        if ($doNotify) {
+            $this->_objectManager = ObjectManager::getInstance();
+            $this->_objectManager->create(ShipmentNotifier::class)
+                ->notify($orderShipment);
+            $orderShipment->save();
+        }
+        $order->addStatusToHistory($order->getStatus(), 'Order has been marked as complete');
+        $order->save();
+
+        return true;
     }
 
     /**
@@ -409,11 +390,6 @@ class Order extends AbstractHelper
      */
     public function getById($orderId)
     {
-        try {
-            return $this->orderRepositoryInterface->get($orderId);
-        } catch (\Exception $e) {
-            $this->logger->critical($e);
-            return false;
-        }
+        return $this->orderRepositoryInterface->get($orderId);
     }
 }

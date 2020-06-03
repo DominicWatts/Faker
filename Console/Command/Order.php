@@ -130,9 +130,7 @@ class Order extends Command
 
             for ($generate = 1; $generate <= $limit; $generate++) {
                 if ($order = $this->orderHelper->createOrder($storeId)) {
-                    $progress->setMessage((string) __('Order: %1', $order->getIncrementId()));
-                } else {
-                    $progress->setMessage((string) __('Order: Problem'));
+                    $progress->setMessage((string) __('Order: %1', $order));
                 }
                 $progress->advance();
             }

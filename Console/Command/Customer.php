@@ -129,7 +129,11 @@ class Customer extends Command
             for ($generate = 1; $generate <= $limit; $generate++) {
                 if ($customer = $this->customerHelper->createCustomer($websiteId)) {
                     $address = $this->customerHelper->createCustomerAddress($customer);
-                    $progress->setMessage((string) __('Customer: %1', $customer->getName()));
+                    $progress->setMessage((string) __(
+                        'Customer: %1 %2',
+                        $customer->getFirstname(),
+                        $customer->getLastname()
+                    ));
                     $progress->advance();
                 }
             }
