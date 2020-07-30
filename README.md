@@ -20,6 +20,8 @@ Docs for this package can be found here: https://packagist.org/packages/fzaninot
 
 # Usage instructions #
 
+Locale is defined inside `Xigen\Faker\Helper\Data`
+
 Content is generated via the following console commands
 
 ## Generate Customer ##
