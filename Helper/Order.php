@@ -139,10 +139,11 @@ class Order extends AbstractHelper
     /**
      * Create random order
      * @param int $storeId
+     * @param int $customerId
      * @return \Magento\Catalog\Model\Order\Interceptor
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function createOrder($storeId = 1)
+    public function createOrder($storeId = 1, $customerId = null)
     {
 
         // bypass Area code not set
@@ -153,7 +154,13 @@ class Order extends AbstractHelper
             $store = $this->storeManagerInterface->getStore($storeId);
             
             $websiteId = $store->getWebsiteId();
-            $customerIds = $this->getRandomCustomerId($websiteId);
+
+            if ($customerId) {
+                $customerIds = [$customerId];
+            } else {
+                $customerIds = $this->getRandomCustomerId($websiteId);
+            }
+
             if (empty($customerIds)) {
                 new \Exception(__('Please add some customers for this store first'));
             }
