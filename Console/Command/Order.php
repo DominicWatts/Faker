@@ -25,6 +25,7 @@ class Order extends Command
     const GENERATE_ARGUMENT = 'generate';
     const STORE_OPTION = 'store';
     const LIMIT_OPTION = 'limit';
+    const CUSTOMER_OPTION = 'customer';
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -98,6 +99,7 @@ class Order extends Command
         $generate = $input->getArgument(self::GENERATE_ARGUMENT) ?: false;
         $storeId = $this->input->getOption(self::STORE_OPTION) ?: 1;
         $limit = $this->input->getOption(self::LIMIT_OPTION) ?: 5;
+        $customerId = $input->getOption(self::CUSTOMER_OPTION) ?: false;
 
         if ($generate) {
             $helper = $this->getHelper('question');
@@ -129,7 +131,7 @@ class Order extends Command
             }
 
             for ($generate = 1; $generate <= $limit; $generate++) {
-                if ($order = $this->orderHelper->createOrder($storeId)) {
+                if ($order = $this->orderHelper->createOrder($storeId, $customerId)) {
                     $progress->setMessage((string) __('Order: %1', $order));
                 }
                 $progress->advance();
@@ -143,7 +145,7 @@ class Order extends Command
 
     /**
      * {@inheritdoc}
-     * xigen:faker:order [-s|--store STORE] [-l|--limit [LIMIT]] [--] <generate>.
+     * xigen:faker:order [-s|--store STORE] [-l|--limit [LIMIT]] [-c|--customer [CUSTOMER]] [--] <generate>.
      */
     protected function configure()
     {
@@ -153,7 +155,7 @@ class Order extends Command
             new InputArgument(self::GENERATE_ARGUMENT, InputArgument::REQUIRED, 'Generate'),
             new InputOption(self::STORE_OPTION, '-s', InputOption::VALUE_REQUIRED, 'Store Id'),
             new InputOption(self::LIMIT_OPTION, '-l', InputOption::VALUE_OPTIONAL, 'Limit'),
-
+            new InputOption(self::CUSTOMER_OPTION, '-c', InputOption::VALUE_OPTIONAL, 'Customer'),
         ]);
         parent::configure();
     }
