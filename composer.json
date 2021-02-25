@@ -3,7 +3,7 @@
     "description": "Console based fake data generator - just generate what you need",
     "type": "magento2-module",
     "license": "proprietary",
-    "version": "1.1.13",
+    "version": "1.1.14",
     "authors": [
         {
             "name": "Dominic Xigen",
@@ -20,7 +20,7 @@
     "require": {
         "fzaninotto/faker": "*",
         "magento/framework": "*",
-        "php": "~5.6.0||~7.0.0||~7.1.0||~7.2.0||~7.3.0",
+        "php": ">=7.1.3",
         "symfony/console": "*",
         "magento/module-catalog": "*",
         "magento/module-quote": "*",
