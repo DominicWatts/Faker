@@ -18,6 +18,8 @@ Docs for this package can be found here: https://packagist.org/packages/fzaninot
 
 `php bin/magento setup:upgrade`
 
+Note: version 1.2.0 is php 7.4 compatible, use ^1.1 for < php 7.4
+
 # Usage instructions #
 
 Locale is defined inside `Xigen\Faker\Helper\Data`
