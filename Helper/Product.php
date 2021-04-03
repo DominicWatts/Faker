@@ -166,7 +166,7 @@ class Product extends AbstractHelper
             ->setDecription($this->faker->paragraphs(rand(1, 4), true))
             ->setShortDescription($this->faker->paragraph)
             ->setMetaTitle(ucwords($this->faker->words(rand(1, 4), true)))
-            ->setMetaKeyword(implode($this->faker->words(rand(10, 20)), ', '))
+            ->setMetaKeyword(implode(', ', $this->faker->words(rand(10, 20))))
             ->setMetaDescription($this->faker->text(200))
             ->setWeight($this->faker->randomFloat(4, 0, 10))
             ->setStatus(rand(1, 2))
