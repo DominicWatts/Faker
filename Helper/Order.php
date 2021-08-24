@@ -152,7 +152,7 @@ class Order extends AbstractHelper
 
         try {
             $store = $this->storeManagerInterface->getStore($storeId);
-            
+
             $websiteId = $store->getWebsiteId();
 
             if ($customerId) {
@@ -185,7 +185,6 @@ class Order extends AbstractHelper
 
             $added = 0;
             foreach ($productIds as $productId) {
-                
                 $product = $this->getProductById($productId);
                 if ($product->isSalable()) {
                     $qty = $this->stockItem->getStockQty($product->getId(), $websiteId);
@@ -218,7 +217,7 @@ class Order extends AbstractHelper
 
             $quote->collectTotals();
             $quote = $this->cartRepositoryInterface->get($quote->getId());
-      
+
             $orderId = $this->cartManagementInterface->placeOrder($quote->getId());
             $this->generateInvoice($orderId);
             if ($this->getRandomTrueOrFalse()) {
@@ -226,7 +225,6 @@ class Order extends AbstractHelper
             }
 
             return $orderId;
-
         } catch (\Exception $e) {
             $this->logger->critical($e);
             return $e->getMessage();
@@ -279,7 +277,7 @@ class Order extends AbstractHelper
         if (!$order || !$order->canShip()) {
             return;
         }
-    
+
         $orderShipment = $this->convertOrder->toShipment($order);
 
         foreach ($order->getAllItems() as $orderItem) {
