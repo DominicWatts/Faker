@@ -147,7 +147,7 @@ class Product extends AbstractHelper
      * @param int $websiteId
      * @param string $typeId
      * @param bool $applyImage
-     * @return \Magento\Catalog\Model\Product\Interceptor
+     * @return \Magento\Catalog\Model\Product\Interceptor|false
      */
     public function createProduct(
         $websiteId = 1,
@@ -205,13 +205,14 @@ class Product extends AbstractHelper
             return $product;
         } catch (\Exception $e) {
             $this->logger->critical($e);
+            return false;
         }
     }
 
     /**
      * Reload product [might not actually need this].
      * @param $product
-     * @return \Magento\Product\Model\Data\Product
+     * @return \Magento\Product\Model\Data\Product|false
      */
     public function reloadProduct(Interceptor $product)
     {
@@ -222,6 +223,7 @@ class Product extends AbstractHelper
                 return $product;
             } catch (\Exception $e) {
                 $this->logger->critical($e);
+                return false;
             }
         }
     }
