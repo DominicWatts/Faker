@@ -86,6 +86,7 @@ class Category extends Command
 
     /**
      * {@inheritdoc}
+     * @return int
      */
     protected function execute(
         InputInterface $input,
@@ -138,7 +139,9 @@ class Category extends Command
             $progress->finish();
             $this->output->writeln('');
             $this->output->writeln('[' . $this->dateTime->gmtDate() . '] Finish');
+            return Cli::RETURN_SUCCESS;
         }
+        return Cli::RETURN_FAILURE;
     }
 
     /**

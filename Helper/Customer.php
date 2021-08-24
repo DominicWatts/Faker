@@ -102,7 +102,7 @@ class Customer extends AbstractHelper
     /**
      * Create random customer
      * @param int $websiteId
-     * @return \Magento\Customer\Api\Data\CustomerInterface
+     * @return \Magento\Customer\Api\Data\CustomerInterface|false
      */
     public function createCustomer($websiteId = 1)
     {
@@ -120,13 +120,14 @@ class Customer extends AbstractHelper
             return $customer;
         } catch (\Exception $e) {
             $this->logger->critical($e);
+            return false;
         }
     }
 
     /**
      * Create address for supplied customerId.
      * @param \Magento\Customer\Model\Data\Customer $customer
-     * @return \Magento\Customer\Api\Data\AddressInterface
+     * @return \Magento\Customer\Api\Data\AddressInterface|false
      */
     public function createCustomerAddress(\Magento\Customer\Model\Data\Customer $customer)
     {
@@ -152,6 +153,7 @@ class Customer extends AbstractHelper
                 return $address;
             } catch (\Exception $e) {
                 $this->logger->critical($e);
+                return false;
             }
         }
     }
