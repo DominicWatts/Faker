@@ -153,9 +153,9 @@ class Customer extends AbstractHelper
                 return $address;
             } catch (\Exception $e) {
                 $this->logger->critical($e);
-                return false;
             }
         }
+        return false;
     }
 
     /**
