@@ -223,9 +223,9 @@ class Product extends AbstractHelper
                 return $product;
             } catch (\Exception $e) {
                 $this->logger->critical($e);
-                return false;
             }
         }
+        return false;
     }
 
     /**
