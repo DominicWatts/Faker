@@ -96,12 +96,12 @@ class Category extends AbstractHelper
 
             try {
                 $category->save();
-
                 return $category;
             } catch (\Exception $e) {
                 $this->logger->critical($e);
             }
         }
+        return false;
     }
 
     /**

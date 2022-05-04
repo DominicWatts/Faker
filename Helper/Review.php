@@ -89,6 +89,7 @@ class Review extends AbstractHelper
         $product = $this->productHelper
             ->getRandomIds(1);
 
+        $website = null;
         $stores = $this->storeManagerInterface->getStores(true, false);
         foreach ($stores as $store) {
             if ($store->getStoreId() == $storeId) {
@@ -114,10 +115,10 @@ class Review extends AbstractHelper
 
         try {
             $review->save();
-
             return $review;
         } catch (\Exception $e) {
             $this->logger->critical($e);
         }
+        return false;
     }
 }
