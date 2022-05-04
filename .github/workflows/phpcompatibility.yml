@@ -5,5 +5,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: 7.0-7.4
-      run: docker run --rm -v $PWD:/code domw/phpcompatibility phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0-7.4 --colors --warning-severity=0 --report=full,summary --extensions=php,phtml ./
+    - name: 7.1-8-0
+      run: docker run --rm -v $PWD:/code domw/phpcompatibility:8.0-cli phpcs --standard=PHPCompatibility --runtime-set testVersion 7.1-8.0 --colors --warning-severity=0 --report=full,summary --extensions=php,phtml ./
