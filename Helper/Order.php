@@ -221,7 +221,7 @@ class Order extends AbstractHelper
             $orderId = $this->cartManagementInterface->placeOrder($quote->getId());
             $this->generateInvoice($orderId);
             if ($this->getRandomTrueOrFalse()) {
-                $this->generateShipment($orderId, $this->getRandomTrueOrFalse());
+                $this->generateShipment($orderId, false);
             }
 
             return $orderId;
