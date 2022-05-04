@@ -1,10 +1,12 @@
 # Faker extension #
 
-![phpcs](https://github.com/DominicWatts/Faker/workflows/phpcs/badge.svg)
+[![php-cs-fixer](https://github.com/DominicWatts/Faker/actions/workflows/phpcsfixer.yml/badge.svg)](https://github.com/DominicWatts/Faker/actions/workflows/phpcsfixer.yml)
 
-![PHPCompatibility](https://github.com/DominicWatts/Faker/workflows/PHPCompatibility/badge.svg)
+[![php-cs-fixer](https://github.com/DominicWatts/Faker/actions/workflows/phpcsfixer.yml/badge.svg)](https://github.com/DominicWatts/Faker/actions/workflows/phpcsfixer.yml)
 
-![PHPStan](https://github.com/DominicWatts/Faker/workflows/PHPStan/badge.svg)
+[![M2 Coding Standard](https://github.com/DominicWatts/Faker/actions/workflows/phpcs.yml/badge.svg)](https://github.com/DominicWatts/Faker/actions/workflows/phpcs.yml)
+
+[![M2 PHPStan](https://github.com/DominicWatts/Faker/actions/workflows/phpstan.yml/badge.svg)](https://github.com/DominicWatts/Faker/actions/workflows/phpstan.yml)
 
 Magento 2 extension to generate fake data.
 

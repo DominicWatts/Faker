@@ -147,7 +147,7 @@ class Product extends AbstractHelper
      * @param int $websiteId
      * @param string $typeId
      * @param bool $applyImage
-     * @return \Magento\Catalog\Model\Product\Interceptor|false
+     * @return Interceptor|false
      */
     public function createProduct(
         $websiteId = 1,
@@ -214,7 +214,7 @@ class Product extends AbstractHelper
      * @param $product
      * @return \Magento\Product\Model\Data\Product|false
      */
-    public function reloadProduct(Interceptor $product)
+    public function reloadProduct($product)
     {
         if ($product && $product->getId()) {
             try {
@@ -262,11 +262,11 @@ class Product extends AbstractHelper
 
     /**
      * Create array of random product links.
-     * @param \Magento\Product\Model\Data\Product $product
+     * @param $product
      * @param int $limit
      * @return array
      */
-    public function createProductLinkArray(Interceptor $product, $limit = 1)
+    public function createProductLinkArray($product, $limit = 1)
     {
         $linkData = [];
         $linkSkus = $this->getRandomSku($limit);
@@ -354,11 +354,11 @@ class Product extends AbstractHelper
 
     /**
      * Add dummy images.
-     * @param \Magento\Catalog\Model\Product\Interceptor $product
+     * @param $product
      * @param int $limit
      * @return void
      */
-    public function addImages(Interceptor $product, $limit = 1)
+    public function addImages($product, $limit = 1)
     {
         for ($generate = 1; $generate <= $limit; $generate++) {
             $imageUrl = self::PLACEHOLDER_SOURCE . 'image-' . str_pad(rand(1, 20), 3, 0, STR_PAD_LEFT) . '.jpg';
