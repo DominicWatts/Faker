@@ -18,7 +18,7 @@
         }
     ],
     "require": {
-        "fzaninotto/faker": "*",
+        "dominicwatts/fakerfork": "*",
         "magento/framework": "*",
         "php": ">=7.4.0",
         "symfony/console": "*",
